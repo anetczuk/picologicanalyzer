@@ -3,6 +3,23 @@
 Logic state analyzer based on Raspberry Pi Pico board.
 
 
+## Generating protocol
+
+To generate protocol codes do following steps:
+1. define configuration `.json` file (example: `src/gen/protocol.json`)
+2. execute generator script `/src/gen/generate.sh` against the config file
+
+Type `/src/gen/generate.sh --help` for supported input arguemnts.
+
+
+## MicroPython limitations
+
+- no support for `enum` classes
+- no support for `abc` module
+- RPi Pico RAM: 256KB
+- RPi Pico Flash: 2MB
+
+
 ## References
 
 - [Raspberry Pi Pico documentation](https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html)

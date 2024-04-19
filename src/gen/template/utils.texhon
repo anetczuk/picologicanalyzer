@@ -1,0 +1,23 @@
+#*
+#* utils templates
+#*
+
+
+#* explode 'message' array into list of items
+#template message_explode( count )
+#{if count > 0:
+#!    index_list = [ str(i) for i in range( 1, count + 1 ) ]
+#!    inline_text = " message[" + "], message[".join( index_list ) + "] "
+#!    _output.write( inline_text )
+#}
+#end template
+
+
+#* explode params array into list of items
+#template params_explode( params )
+#!count = len( params )
+#{if count > 0:
+#!    inline_text = ", ".join( params )
+#!    _output.write( inline_text )
+#}
+#end template

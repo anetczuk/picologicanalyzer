@@ -1,0 +1,44 @@
+{
+    "_description_": [
+        "Parameters description:",
+        "message direction:",
+        "  <empty>   both directions",
+        "  BOTH      both directions",
+        "  TO_A      from MCU (RPi Pico) to Host (PC)",
+        "  TO_B      from Host to MCU",
+        "  DISABLED  skip item"
+    ],
+
+	"device_a": {
+		"_description_": "Host side items",
+
+    	"class_name": "HostConnector",
+    	"class_template": "protocol.py.tmpl",
+    	"enum_name": "HostMessage",
+    	"enum_template": "message.py.tmpl"
+    },
+
+	"device_b": {
+		"_description_": "Sensor side items",
+
+    	"class_name": "SensorConnector",
+    	"class_template": "protocol.py.tmpl",
+    	"enum_name": "SensorMessage",
+    	"enum_template": "message.py.tmpl"
+    },
+
+	"_description_": "type of message identifier: str, int or hex",
+	"message_id_type": "hex",
+
+    "messages": [
+		{ "id": "REQUEST_DATA",        "direction": "TO_B", "params": [ {"id": "data_size", "type": "int"}, {"id": "transfer_num", "type": "int"} ] },
+		{ "id": "GET_CH_ENABLE",       "direction": "TO_B", "params": [] },
+		{ "id": "TEST_BYTES_REQUEST",  "direction": "TO_B", "params": [ {"id": "data_bytes", "type": "bytearray"}, {"id": "transfer_num", "type": "int"} ] },
+		{ "id": "TEST_TEXT_REQUEST",   "direction": "TO_B", "params": [ {"id": "content", "type": "str"}, {"id": "transfer_num", "type": "int"} ] },
+
+		{ "id": "RESPONSE_DATA",       "direction": "TO_A", "params": [ {"id": "data_list", "type": "bytearray"} ] },
+		{ "id": "SEND_CH_ENABLE",      "direction": "TO_A", "params": [ {"id": "channel_enable_flags", "type": "byte"} ] },
+		{ "id": "TEST_BYTES_RESPONSE", "direction": "TO_A", "params": [ {"id": "data_bytes", "type": "bytearray"} ] },
+		{ "id": "TEST_TEXT_RESPONSE",  "direction": "TO_A", "params": [ {"id": "content", "type": "str"} ] }
+    ]
+}
