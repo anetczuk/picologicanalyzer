@@ -32,20 +32,20 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_REQUEST_DATA(4, 2)
+        host.send_MEASURE_RQST(4, 2)
 
         # receive request
         command = sensor.receive_message()
-        self.assertEqual(command, [HostMessage.REQUEST_DATA, 4, 2])
+        self.assertEqual(command, [HostMessage.MEASURE_RQST, 4, 2])
 
-        sensor.send_RESPONSE_DATA([1, 2, 3, 4])
-        sensor.send_RESPONSE_DATA([5, 6, 7, 8])
+        sensor.send_MEASURE_RSPNS([1, 2, 3, 4])
+        sensor.send_MEASURE_RSPNS([5, 6, 7, 8])
 
         # receive response
         response = host.receive_message()
-        self.assertEqual(response, [SensorMessage.RESPONSE_DATA, bytearray(b"\x01\x02\x03\x04")])
+        self.assertEqual(response, [SensorMessage.MEASURE_RSPNS, bytearray(b"\x01\x02\x03\x04")])
         response = host.receive_message()
-        self.assertEqual(response, [SensorMessage.RESPONSE_DATA, bytearray(b"\x05\x06\x07\x08")])
+        self.assertEqual(response, [SensorMessage.MEASURE_RSPNS, bytearray(b"\x05\x06\x07\x08")])
 
     def test_channel_enable(self):
         channel = ByteArrayChannel()
@@ -53,17 +53,17 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_GET_CH_ENABLE()
+        host.send_CH_STATE_RQST()
 
         # receive request
         command = sensor.receive_message()
-        self.assertEqual(command, [HostMessage.GET_CH_ENABLE])
+        self.assertEqual(command, [HostMessage.CH_STATE_RQST])
 
-        sensor.send_SEND_CH_ENABLE(0x03)
+        sensor.send_CH_STATE_RSPNS(0x03)
 
         # receive response
         response = host.receive_message()
-        self.assertEqual(response, [SensorMessage.SEND_CH_ENABLE, 0x03])
+        self.assertEqual(response, [SensorMessage.CH_STATE_RSPNS, 0x03])
 
     def test_test_bytes(self):
         channel = ByteArrayChannel()
@@ -71,17 +71,17 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_TEST_BYTES_REQUEST(b"\x01\x02\x03", 1)
+        host.send_TEST_BYTES_RQST(b"\x01\x02\x03", 1)
 
         # receive request
         command = sensor.receive_message()
-        self.assertEqual(command, [HostMessage.TEST_BYTES_REQUEST, b"\x01\x02\x03", 1])
+        self.assertEqual(command, [HostMessage.TEST_BYTES_RQST, b"\x01\x02\x03", 1])
 
-        sensor.send_TEST_BYTES_RESPONSE(b"\x01\x02\x03")
+        sensor.send_TEST_BYTES_RSPNS(b"\x01\x02\x03")
 
         # receive response
         response = host.receive_message()
-        self.assertEqual(response, [SensorMessage.TEST_BYTES_RESPONSE, b"\x01\x02\x03"])
+        self.assertEqual(response, [SensorMessage.TEST_BYTES_RSPNS, b"\x01\x02\x03"])
 
     def test_test_text(self):
         channel = ByteArrayChannel()
@@ -89,14 +89,14 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_TEST_TEXT_REQUEST("abcd", 1)
+        host.send_TEST_TEXT_RQST("abcd", 1)
 
         # receive request
         command = sensor.receive_message()
-        self.assertEqual(command, [HostMessage.TEST_TEXT_REQUEST, "abcd", 1])
+        self.assertEqual(command, [HostMessage.TEST_TEXT_RQST, "abcd", 1])
 
-        sensor.send_TEST_TEXT_RESPONSE("abcd")
+        sensor.send_TEST_TEXT_RSPNS("abcd")
 
         # receive response
         response = host.receive_message()
-        self.assertEqual(response, [SensorMessage.TEST_TEXT_RESPONSE, "abcd"])
+        self.assertEqual(response, [SensorMessage.TEST_TEXT_RSPNS, "abcd"])

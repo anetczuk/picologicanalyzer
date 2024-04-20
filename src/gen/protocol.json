@@ -31,14 +31,16 @@
 	"message_id_type": "hex",
 
     "messages": [
-		{ "id": "REQUEST_DATA",        "direction": "TO_B", "params": [ {"id": "data_size", "type": "int"}, {"id": "transfer_num", "type": "int"} ] },
-		{ "id": "GET_CH_ENABLE",       "direction": "TO_B", "params": [] },
-		{ "id": "TEST_BYTES_REQUEST",  "direction": "TO_B", "params": [ {"id": "data_bytes", "type": "bytearray"}, {"id": "transfer_num", "type": "int"} ] },
-		{ "id": "TEST_TEXT_REQUEST",   "direction": "TO_B", "params": [ {"id": "content", "type": "str"}, {"id": "transfer_num", "type": "int"} ] },
+		{ "id": "MEASURE_RQST",         "direction": "TO_B", "params": [ {"id": "data_size", "type": "int"}, {"id": "transfer_num", "type": "int"} ] },
+		{ "id": "CH_STATE_RQST",        "direction": "TO_B", "params": [] },
+		{ "id": "INTERNAL_TEMP_RQST",   "direction": "TO_B", "params": [] },
+		{ "id": "TEST_BYTES_RQST",      "direction": "TO_B", "params": [ {"id": "data_bytes", "type": "bytearray"}, {"id": "transfer_num", "type": "int"} ] },
+		{ "id": "TEST_TEXT_RQST",       "direction": "TO_B", "params": [ {"id": "content", "type": "str"}, {"id": "transfer_num", "type": "int"} ] },
 
-		{ "id": "RESPONSE_DATA",       "direction": "TO_A", "params": [ {"id": "data_list", "type": "bytearray"} ] },
-		{ "id": "SEND_CH_ENABLE",      "direction": "TO_A", "params": [ {"id": "channel_enable_flags", "type": "byte"} ] },
-		{ "id": "TEST_BYTES_RESPONSE", "direction": "TO_A", "params": [ {"id": "data_bytes", "type": "bytearray"} ] },
-		{ "id": "TEST_TEXT_RESPONSE",  "direction": "TO_A", "params": [ {"id": "content", "type": "str"} ] }
+		{ "id": "MEASURE_RSPNS",        "direction": "TO_A", "params": [ {"id": "data_list", "type": "bytearray"} ] },
+		{ "id": "CH_STATE_RSPNS",       "direction": "TO_A", "params": [ {"id": "channel_enable_flags", "type": "byte"} ] },
+		{ "id": "INTERNAL_TEMP_RSPNS",  "direction": "TO_A", "params": [ {"id": "channel_enable_flags", "type": "byte"} ] },
+		{ "id": "TEST_BYTES_RSPNS",     "direction": "TO_A", "params": [ {"id": "data_bytes", "type": "bytearray"} ] },
+		{ "id": "TEST_TEXT_RSPNS",      "direction": "TO_A", "params": [ {"id": "content", "type": "str"} ] }
     ]
 }

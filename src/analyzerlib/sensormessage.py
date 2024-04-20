@@ -9,21 +9,24 @@
 
 class SensorMessage:
 
-    RESPONSE_DATA = 0x01
-    SEND_CH_ENABLE = 0x02
-    TEST_BYTES_RESPONSE = 0x03
-    TEST_TEXT_RESPONSE = 0x04
+    MEASURE_RSPNS = 0x01
+    CH_STATE_RSPNS = 0x02
+    INTERNAL_TEMP_RSPNS = 0x03
+    TEST_BYTES_RSPNS = 0x04
+    TEST_TEXT_RSPNS = 0x05
 
     @staticmethod
     def get_id_from_value(value) -> str:
         if value == 0x01:
-            return "RESPONSE_DATA"
+            return "MEASURE_RSPNS"
         if value == 0x02:
-            return "SEND_CH_ENABLE"
+            return "CH_STATE_RSPNS"
         if value == 0x03:
-            return "TEST_BYTES_RESPONSE"
+            return "INTERNAL_TEMP_RSPNS"
         if value == 0x04:
-            return "TEST_TEXT_RESPONSE"
+            return "TEST_BYTES_RSPNS"
+        if value == 0x05:
+            return "TEST_TEXT_RSPNS"
 
         # unhandled value
         return None

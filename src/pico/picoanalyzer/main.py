@@ -59,17 +59,17 @@ def start(logger):
             # elif command == HostMessage.GET_CH_ENABLE:
             #     pass
 
-            elif command == HostMessage.TEST_BYTES_REQUEST:
+            elif command == HostMessage.TEST_BYTES_RQST:
                 data_content = command_data[1]
                 transfer_num = command_data[2]
                 for _ in range(0, transfer_num):
-                    connector.send_TEST_BYTES_RESPONSE(data_content)
+                    connector.send_TEST_BYTES_RSPNS(data_content)
 
-            elif command == HostMessage.TEST_TEXT_REQUEST:
+            elif command == HostMessage.TEST_TEXT_RQST:
                 data_content = command_data[1]
                 transfer_num = command_data[2]
                 for _ in range(0, transfer_num):
-                    connector.send_TEST_TEXT_RESPONSE(data_content)
+                    connector.send_TEST_TEXT_RSPNS(data_content)
 
             else:
                 # unhandled command
