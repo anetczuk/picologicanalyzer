@@ -17,7 +17,7 @@ import utime
 from analyzerlib.hostmessage import HostMessage
 from analyzerlib.sensorendpoint import SensorEndpoint
 
-from led import blink_led
+from board import blink_led, read_temperaure
 from sysstreamchannel import SysStreamChannel
 
 

@@ -27,3 +27,17 @@ def blink_led(blink_duration=0.1):
     led.value(1)
     utime.sleep(blink_duration)
     led.value(0)
+
+
+# =======================================
+
+
+sensor_temp = machine.ADC(4)  # temperature sensor
+conversion_factor = 3.3 / 65535
+
+
+def read_temperaure():
+    # higher temperature -- smaller volts value
+    volts = sensor_temp.read_u16() * conversion_factor
+    temperature = 27 - (volts - 0.706) / 0.001721
+    return temperature
