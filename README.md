@@ -22,6 +22,7 @@ Type `/src/gen/generate.sh --help` for supported input arguemnts.
 
 ## References
 
+- [serial protocol generator](https://github.com/anetczuk/mpython-serial-protogen)
 - [Raspberry Pi Pico documentation](https://www.raspberrypi.com/documentation/microcontrollers/raspberry-pi-pico.html)
 
 

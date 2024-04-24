@@ -1,31 +1,32 @@
 #
-# File was automatically generated using protocol generator.
+# File was automatically generated using 'mpyserialprotogen'
 #
-
-#
-# Do not use enum classes. MicroPython does not support them.
+# Project website: https://github.com/anetczuk/mpython-serial-protogen
 #
 
 
 class SensorMessage:
 
-    MEASURE_RSPNS = 0x01
-    CH_STATE_RSPNS = 0x02
-    INTERNAL_TEMP_RSPNS = 0x03
-    TEST_BYTES_RSPNS = 0x04
-    TEST_TEXT_RSPNS = 0x05
+    UNKNOWN_REQUEST_RSPNS = 0x01
+    INTERNAL_TEMP_RSPNS = 0x02
+    MEASURE_RSPNS = 0x03
+    CHANNEL_STATE_RSPNS = 0x04
+    TEST_BYTES_RSPNS = 0x05
+    TEST_TEXT_RSPNS = 0x06
 
     @staticmethod
     def get_id_from_value(value) -> str:
         if value == 0x01:
-            return "MEASURE_RSPNS"
+            return "UNKNOWN_REQUEST_RSPNS"
         if value == 0x02:
-            return "CH_STATE_RSPNS"
-        if value == 0x03:
             return "INTERNAL_TEMP_RSPNS"
+        if value == 0x03:
+            return "MEASURE_RSPNS"
         if value == 0x04:
-            return "TEST_BYTES_RSPNS"
+            return "CHANNEL_STATE_RSPNS"
         if value == 0x05:
+            return "TEST_BYTES_RSPNS"
+        if value == 0x06:
             return "TEST_TEXT_RSPNS"
 
         # unhandled value

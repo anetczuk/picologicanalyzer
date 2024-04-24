@@ -6,6 +6,9 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+from random import randrange
+
+from analyzerlib.sensormessage import SensorMessage
 from analyzerlib.hostconnector import HostConnector
 
 
@@ -21,3 +24,24 @@ class HostEndpoint(HostConnector):
 
     def receive_text(self):
         return self.channel.read_text()
+
+    # useful in case of receiving invalid message
+    def restore_connection(self):
+        while True:
+            print("clearing buffer")
+            while True:
+                data = self.receive_bytes(1)
+                print("aaa:", data)
+                if not data:
+                    break
+            print("sending test message")
+            rand_num = randrange(256)
+            rand_byte = bytes([rand_num])
+            self.send_TEST_BYTES_RQST(rand_byte, 1)
+            received = self.receive_message()
+            print("xxxx:", rand_byte, received)
+            if received[0] != SensorMessage.TEST_BYTES_RSPNS:
+                continue
+            received_data = received[1]
+            if received_data == rand_byte:
+                break
