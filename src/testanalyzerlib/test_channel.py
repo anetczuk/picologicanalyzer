@@ -8,7 +8,7 @@
 
 import unittest
 
-from analyzerlib.channel import ByteArrayChannel
+from testanalyzerlib.bytearraychannel import ByteArrayChannel
 
 
 class ChannelTest(unittest.TestCase):

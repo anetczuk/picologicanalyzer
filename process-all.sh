@@ -7,7 +7,13 @@ set -eu
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 
-$SCRIPT_DIR/src/gen/generate.sh
+$SCRIPT_DIR/src/protogen/generate.sh
+
+
+# tests
+$SCRIPT_DIR/src/testanalyzerlib/runtests.py
+$SCRIPT_DIR/src/host/testhostanalyzer/runtests.py
+$SCRIPT_DIR/src/pico/testpicoanalyzer/runtests.py
 
 
 $SCRIPT_DIR/doc/generate-doc.sh

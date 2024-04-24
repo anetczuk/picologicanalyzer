@@ -8,18 +8,19 @@
 
 import unittest
 
-from analyzerlib.channel import ByteArrayChannel
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensorendpoint import SensorEndpoint
 from analyzerlib.hostmessage import HostMessage
 from analyzerlib.sensormessage import SensorMessage
 
+from testanalyzerlib.bytearraychannel import ByteArrayChannel
+
 
 class ProtocolTest(unittest.TestCase):
     def test_request_text(self):
         channel = ByteArrayChannel()
-        host = HostEndpoint(channel)
-        sensor = SensorEndpoint(channel)
+        host = HostEndpoint(channel, None)
+        sensor = SensorEndpoint(channel, None)
 
         sensor.send_text("abcde")
 
@@ -28,8 +29,8 @@ class ProtocolTest(unittest.TestCase):
 
     def test_request_data(self):
         channel = ByteArrayChannel()
-        host = HostEndpoint(channel)
-        sensor = SensorEndpoint(channel)
+        host = HostEndpoint(channel, None)
+        sensor = SensorEndpoint(channel, None)
 
         # send request
         host.send_MEASURE_RQST(4, 2)
@@ -47,28 +48,46 @@ class ProtocolTest(unittest.TestCase):
         response = host.receive_message()
         self.assertEqual(response, [SensorMessage.MEASURE_RSPNS, bytearray(b"\x05\x06\x07\x08")])
 
-    def test_channel_enable(self):
+    def test_internal_temperature(self):
         channel = ByteArrayChannel()
-        host = HostEndpoint(channel)
-        sensor = SensorEndpoint(channel)
+        host = HostEndpoint(channel, None)
+        sensor = SensorEndpoint(channel, None)
 
         # send request
-        host.send_CH_STATE_RQST()
+        host.send_INTERNAL_TEMP_RQST()
 
         # receive request
         command = sensor.receive_message()
-        self.assertEqual(command, [HostMessage.CH_STATE_RQST])
+        self.assertEqual(command, [HostMessage.INTERNAL_TEMP_RQST])
 
-        sensor.send_CH_STATE_RSPNS(0x03)
+        sensor.send_INTERNAL_TEMP_RSPNS(2610)
 
         # receive response
         response = host.receive_message()
-        self.assertEqual(response, [SensorMessage.CH_STATE_RSPNS, 0x03])
+        self.assertEqual(response, [SensorMessage.INTERNAL_TEMP_RSPNS, 2610])
+
+    def test_channel_enable(self):
+        channel = ByteArrayChannel()
+        host = HostEndpoint(channel, None)
+        sensor = SensorEndpoint(channel, None)
+
+        # send request
+        host.send_CHANNEL_STATE_RQST()
+
+        # receive request
+        command = sensor.receive_message()
+        self.assertEqual(command, [HostMessage.CHANNEL_STATE_RQST])
+
+        sensor.send_CHANNEL_STATE_RSPNS(0x03)
+
+        # receive response
+        response = host.receive_message()
+        self.assertEqual(response, [SensorMessage.CHANNEL_STATE_RSPNS, 0x03])
 
     def test_test_bytes(self):
         channel = ByteArrayChannel()
-        host = HostEndpoint(channel)
-        sensor = SensorEndpoint(channel)
+        host = HostEndpoint(channel, None)
+        sensor = SensorEndpoint(channel, None)
 
         # send request
         host.send_TEST_BYTES_RQST(b"\x01\x02\x03", 1)
@@ -85,8 +104,8 @@ class ProtocolTest(unittest.TestCase):
 
     def test_test_text(self):
         channel = ByteArrayChannel()
-        host = HostEndpoint(channel)
-        sensor = SensorEndpoint(channel)
+        host = HostEndpoint(channel, None)
+        sensor = SensorEndpoint(channel, None)
 
         # send request
         host.send_TEST_TEXT_RQST("abcd", 1)

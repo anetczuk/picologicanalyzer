@@ -35,7 +35,7 @@ class HostEndpoint(HostConnector):
                 if not data:
                     break
             print("sending test message")
-            rand_num = randrange(256)
+            rand_num = randrange(256)  # nosec
             rand_byte = bytes([rand_num])
             self.send_TEST_BYTES_RQST(rand_byte, 1)
             received = self.receive_message()
