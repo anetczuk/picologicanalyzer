@@ -30,17 +30,22 @@ class HostConnector:
             message = self.channel.read_int(1)
             return [command, message]
 
+        # SET_KBD_INTR_RSPNS
+        if command == 0x02:
+            # no fields
+            return [command]
+
         # INTERNAL_TEMP_RSPNS
         ## parameters:
         ##    temperature: int16
-        if command == 0x02:
+        if command == 0x03:
             temperature = self.channel.read_int(2)
             return [command, temperature]
 
         # MEASURE_RSPNS
         ## parameters:
         ##    data_list: bytearray
-        if command == 0x03:
+        if command == 0x04:
             data_size = self.channel.read_int(2)
             data_list = self.channel.read_bytes(data_size)
             return [command, data_list]
@@ -48,14 +53,14 @@ class HostConnector:
         # CHANNEL_STATE_RSPNS
         ## parameters:
         ##    channel_enable_flags: byte
-        if command == 0x04:
+        if command == 0x05:
             channel_enable_flags = self.channel.read_int(1)
             return [command, channel_enable_flags]
 
         # TEST_BYTES_RSPNS
         ## parameters:
         ##    data_bytes: bytearray
-        if command == 0x05:
+        if command == 0x06:
             data_size = self.channel.read_int(2)
             data_bytes = self.channel.read_bytes(data_size)
             return [command, data_bytes]
@@ -63,12 +68,12 @@ class HostConnector:
         # TEST_TEXT_RSPNS
         ## parameters:
         ##    content: str
-        if command == 0x06:
+        if command == 0x07:
             content = self.channel.read_text()
             return [command, content]
 
         if self.logger:
-            self.logger.error(f"unknown message: '{command}'")
+            self.logger.error(f"unknown message: '{command}' '{chr(command)}'")
         return [None, command]
 
     ## ============= send methods ===============

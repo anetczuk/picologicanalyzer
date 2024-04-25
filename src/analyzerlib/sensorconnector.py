@@ -76,7 +76,7 @@ class SensorConnector:
             return [command, content, transfer_num]
 
         if self.logger:
-            self.logger.error(f"unknown message: '{command}'")
+            self.logger.error(f"unknown message: '{command}' '{chr(command)}'")
         return [None, command]
 
     ## ============= send methods ===============
@@ -88,18 +88,22 @@ class SensorConnector:
         self.channel.write_int(0x01, 1)  # "UNKNOWN_REQUEST_RSPNS"
         self.channel.write_int(message, 1)
 
+    ## send 'SET_KBD_INTR_RSPNS' message
+    def send_SET_KBD_INTR_RSPNS(self):
+        self.channel.write_int(0x02, 1)  # "SET_KBD_INTR_RSPNS"
+
     ## send 'INTERNAL_TEMP_RSPNS' message
     ## parameters:
     ##    temperature: int16
     def send_INTERNAL_TEMP_RSPNS(self, temperature):
-        self.channel.write_int(0x02, 1)  # "INTERNAL_TEMP_RSPNS"
+        self.channel.write_int(0x03, 1)  # "INTERNAL_TEMP_RSPNS"
         self.channel.write_int(temperature, 2)
 
     ## send 'MEASURE_RSPNS' message
     ## parameters:
     ##    data_list: bytearray
     def send_MEASURE_RSPNS(self, data_list):
-        self.channel.write_int(0x03, 1)  # "MEASURE_RSPNS"
+        self.channel.write_int(0x04, 1)  # "MEASURE_RSPNS"
         self.channel.write_int(len(data_list), 2)
         self.channel.write_bytes(data_list)
 
@@ -107,14 +111,14 @@ class SensorConnector:
     ## parameters:
     ##    channel_enable_flags: byte
     def send_CHANNEL_STATE_RSPNS(self, channel_enable_flags):
-        self.channel.write_int(0x04, 1)  # "CHANNEL_STATE_RSPNS"
+        self.channel.write_int(0x05, 1)  # "CHANNEL_STATE_RSPNS"
         self.channel.write_int(channel_enable_flags, 1)
 
     ## send 'TEST_BYTES_RSPNS' message
     ## parameters:
     ##    data_bytes: bytearray
     def send_TEST_BYTES_RSPNS(self, data_bytes):
-        self.channel.write_int(0x05, 1)  # "TEST_BYTES_RSPNS"
+        self.channel.write_int(0x06, 1)  # "TEST_BYTES_RSPNS"
         self.channel.write_int(len(data_bytes), 2)
         self.channel.write_bytes(data_bytes)
 
@@ -122,5 +126,5 @@ class SensorConnector:
     ## parameters:
     ##    content: str
     def send_TEST_TEXT_RSPNS(self, content):
-        self.channel.write_int(0x06, 1)  # "TEST_TEXT_RSPNS"
+        self.channel.write_int(0x07, 1)  # "TEST_TEXT_RSPNS"
         self.channel.write_text(content)

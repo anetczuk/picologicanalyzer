@@ -8,25 +8,28 @@
 class SensorMessage:
 
     UNKNOWN_REQUEST_RSPNS = 0x01
-    INTERNAL_TEMP_RSPNS = 0x02
-    MEASURE_RSPNS = 0x03
-    CHANNEL_STATE_RSPNS = 0x04
-    TEST_BYTES_RSPNS = 0x05
-    TEST_TEXT_RSPNS = 0x06
+    SET_KBD_INTR_RSPNS = 0x02
+    INTERNAL_TEMP_RSPNS = 0x03
+    MEASURE_RSPNS = 0x04
+    CHANNEL_STATE_RSPNS = 0x05
+    TEST_BYTES_RSPNS = 0x06
+    TEST_TEXT_RSPNS = 0x07
 
     @staticmethod
     def get_id_from_value(value) -> str:
         if value == 0x01:
             return "UNKNOWN_REQUEST_RSPNS"
         if value == 0x02:
-            return "INTERNAL_TEMP_RSPNS"
+            return "SET_KBD_INTR_RSPNS"
         if value == 0x03:
-            return "MEASURE_RSPNS"
+            return "INTERNAL_TEMP_RSPNS"
         if value == 0x04:
-            return "CHANNEL_STATE_RSPNS"
+            return "MEASURE_RSPNS"
         if value == 0x05:
-            return "TEST_BYTES_RSPNS"
+            return "CHANNEL_STATE_RSPNS"
         if value == 0x06:
+            return "TEST_BYTES_RSPNS"
+        if value == 0x07:
             return "TEST_TEXT_RSPNS"
 
         # unhandled value

@@ -12,6 +12,13 @@ from analyzerlib.channel import AbstractChannel
 
 
 class SysStreamChannel(AbstractChannel):
+    def write_byte(self, number):
+        data_bytes = number.to_bytes(1, "big")
+        sys.stdout.buffer.write(data_bytes)
+
+    def read_byte(self):
+        return sys.stdin.buffer.read(1)
+
     def write_bytes(self, data_bytes: bytes):
         sys.stdout.buffer.write(data_bytes)
 

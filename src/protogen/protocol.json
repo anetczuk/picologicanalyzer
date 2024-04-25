@@ -41,6 +41,7 @@
 		{ "id": "TEST_TEXT_RQST",       	"direction": "TO_B", "fields": [ {"id": "content", "type": "str"}, {"id": "transfer_num", "type": "int16"} ] },
 
 		{ "id": "UNKNOWN_REQUEST_RSPNS",	"direction": "TO_A", "fields": [ {"id": "message", "type": "byte"} ] },
+		{ "id": "SET_KBD_INTR_RSPNS",   	"direction": "TO_A", "fields": [] },
 		{ "id": "INTERNAL_TEMP_RSPNS",  	"direction": "TO_A", "fields": [ {"id": "temperature", "type": "int16"} ] },
 		{ "id": "MEASURE_RSPNS",        	"direction": "TO_A", "fields": [ {"id": "data_list", "type": "bytearray"} ] },
 		{ "id": "CHANNEL_STATE_RSPNS",      "direction": "TO_A", "fields": [ {"id": "channel_enable_flags", "type": "byte"} ] },

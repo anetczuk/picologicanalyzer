@@ -17,16 +17,22 @@ led = machine.Pin(25, machine.Pin.OUT)
 led_value = 0
 
 
+def set_led(value):
+    global led_value
+    led_value = value
+    led.value(led_value % 2)
+
+
 def toggle_led():
     global led_value
     led_value = (led_value + 1) % 2  # toggle value
-    led.value(led_value)
+    set_led(led_value)
 
 
 def blink_led(blink_duration=0.1):
-    led.value(1)
+    toggle_led()
     utime.sleep(blink_duration)
-    led.value(0)
+    toggle_led()
 
 
 # =======================================
