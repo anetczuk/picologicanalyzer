@@ -22,17 +22,31 @@ import time
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
+from analyzerlib.sensormessage import SensorMessage
 from hostanalyzer.serialchannel import SerialChannel
 from hostanalyzer.printlogger import PrintLogger
 
 
-def read_pico_temperature(connector: HostEndpoint):
-    connector.send_INTERNAL_TEMP_RQST()
+def handle_message(connector: HostEndpoint):
     message = connector.receive_message()
+    if message is None:
+        print("invalid message:", message)
+        return
+
+    command = message[0]
+    if command == SensorMessage.SET_KBD_INTR_RSPNS:
+        print("keyboard interrupt acknowledge")
+        return
+
+    if command != SensorMessage.INTERNAL_TEMP_RSPNS:
+        print("invalid message:", message)
+        return
+
     temperature = message[1]
     if temperature is None:
         print("invalid data:", message)
         return
+
     temperature = temperature / 100.0
     print("current Pico temperature:", temperature)
 
@@ -49,9 +63,18 @@ def main():
         channel = SerialChannel(medium)
         connector = HostEndpoint(channel, logger)
 
+        # disable keyboard interrupts (allow value 0x03)
+        connector.send_SET_KBD_INTR_RQST(0)
+        handle_message(connector)
+
         for _ in range(0, 5):
-            read_pico_temperature(connector)
+            connector.send_INTERNAL_TEMP_RQST()
+            handle_message(connector)
             time.sleep(0.5)
+
+        # enable keyboard interrupt
+        connector.send_SET_KBD_INTR_RQST(1)
+        handle_message(connector)
 
     return 0
 
