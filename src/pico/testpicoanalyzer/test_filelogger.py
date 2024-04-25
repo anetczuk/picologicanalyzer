@@ -25,7 +25,7 @@ class FileLoggerTest(unittest.TestCase):
             logger.error("ccc")
 
         content = read_file(log_file_path)
-        self.assertEqual(content, "INFO:  aaa\nWARN:  bbb\nERROR: ccc\n")
+        self.assertRegex(content, r".*INFO:  aaa\n.*WARN:  bbb\n.*ERROR: ccc\n")
 
     def test_exception(self):
         log_file_path = "/tmp/test_logger.txt"  # nosec
@@ -36,4 +36,4 @@ class FileLoggerTest(unittest.TestCase):
                 logger.exception(exc)
 
         content = read_file(log_file_path)
-        self.assertEqual(content, "ERROR: exception example\n")
+        self.assertRegex(content, r".*ERROR: exception example\n")

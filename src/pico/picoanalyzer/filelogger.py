@@ -8,8 +8,8 @@
 
 import sys
 
-from picoserial.timefunc import get_current_time_str
-from picoserial.logger import Logger
+from analyzerlib.timefunc import get_current_time_str
+from analyzerlib.logger import Logger
 
 
 try:
