@@ -2,7 +2,7 @@
     "_description_": "Host side config",
 	"device_a": {
     	"class_name": "HostConnector",
-    	"class_template": "protocol.py.tmpl",
+    	"class_template": "protocol_lookup_dict.py.tmpl",
     	"enum_name": "HostMessage",
     	"enum_template": "message.py.tmpl"
     },
@@ -10,7 +10,7 @@
     "_description_": "Sensor side config",
 	"device_b": {
     	"class_name": "SensorConnector",
-    	"class_template": "protocol.py.tmpl",
+    	"class_template": "protocol_lookup_dict.py.tmpl",
     	"enum_name": "SensorMessage",
     	"enum_template": "message.py.tmpl"
     },
@@ -33,18 +33,39 @@
     ],
     "messages": [
 		{ "id": "SET_KBD_INTR_RQST",   		"direction": "TO_B", "fields": [ {"id": "new_state", "type": "bool"} ] },
+		{ "id": "TERMINATE_RQST",           "direction": "TO_B", "fields": [] },
 		{ "id": "SET_INTERNAL_LED_RQST",   	"direction": "TO_B", "fields": [ {"id": "new_state", "type": "bool"} ] },
+		{ "id": "CURRENT_TIME_MS_RQST",   	"direction": "TO_B", "fields": [] },
+		{ "id": "CURRENT_TIME_US_RQST",   	"direction": "TO_B", "fields": [] },
+		{ "id": "CURRENT_TIME_CPU_RQST",   	"direction": "TO_B", "fields": [] },
 		{ "id": "INTERNAL_TEMP_RQST",   	"direction": "TO_B", "fields": [] },
-		{ "id": "MEASURE_RQST",         	"direction": "TO_B", "fields": [ {"id": "data_size", "type": "int16"}, {"id": "transfer_num", "type": "int16"} ] },
+
 		{ "id": "CHANNEL_STATE_RQST",       "direction": "TO_B", "fields": [] },
-		{ "id": "TEST_BYTES_RQST",      	"direction": "TO_B", "fields": [ {"id": "data_bytes", "type": "bytearray"}, {"id": "transfer_num", "type": "int16"} ] },
+		{ "id": "SELECT_CHANNELS_RQST",     "direction": "TO_B", "fields": [ {"id": "channel_enable_flags", "type": "byte"} ] },
+		{ "id": "SET_PROBE_DELAY_US_RQST",  "direction": "TO_B", "fields": [ {"id": "delay_us", "type": "int16"} ] },
+		{ "id": "MEASURED_NO_RQST",         "direction": "TO_B", "fields": [] },
+		{ "id": "MEASURE_RQST",         	"direction": "TO_B", "fields": [ {"id": "measure_num", "type": "int16"} ] },
+		{ "id": "MEASURE_TR_RQST",         	"direction": "TO_B", "fields": [ {"id": "measure_num", "type": "int16"}, {"id": "transfer_num", "type": "int16"} ] },
+		{ "id": "MEASURE_TIME_RQST",        "direction": "TO_B", "fields": [ {"id": "measure_num", "type": "int16"} ] },
+		{ "id": "MEASURE_TIME_TR_RQST",     "direction": "TO_B", "fields": [ {"id": "measure_num", "type": "byte"}, {"id": "transfer_num", "type": "byte"}, {"id": "params_multiplier", "type": "byte"} ] },
+		{ "id": "TRANSFER_TIME_RQST",       "direction": "TO_B", "fields": [ {"id": "response_size", "type": "int16"} ] },
+		{ "id": "PROBE_TIME_RQST",          "direction": "TO_B", "fields": [ {"id": "probe_num", "type": "int16"} ] },
+		{ "id": "TEST_BYTES_RQST",      	"direction": "TO_B", "fields": [ {"id": "data_bytes", "type": "bytearray"}, {"id": "transfer_num", "type": "int16"}, {"id": "data_multiplier", "type": "int16"} ] },
 		{ "id": "TEST_TEXT_RQST",       	"direction": "TO_B", "fields": [ {"id": "content", "type": "str"}, {"id": "transfer_num", "type": "int16"} ] },
+		{ "id": "TEST_MEASURE_TIME_RQST",   "direction": "TO_B", "fields": [ {"id": "measure_num", "type": "int16"} ] },
+
 
 		{ "id": "UNKNOWN_REQUEST_RSPNS",	"direction": "TO_A", "fields": [ {"id": "message", "type": "byte"} ] },
-		{ "id": "SET_KBD_INTR_RSPNS",   	"direction": "TO_A", "fields": [] },
+		{ "id": "ACKNOWLEDGE_RSPNS",   	    "direction": "TO_A", "fields": [ {"id": "message", "type": "byte"} ] },
+		{ "id": "CURRENT_TIME_MS_RSPNS",   	"direction": "TO_A", "fields": [ {"id": "time", "type": "int32"} ] },
+		{ "id": "CURRENT_TIME_US_RSPNS",   	"direction": "TO_A", "fields": [ {"id": "time", "type": "int32"} ] },
+		{ "id": "CURRENT_TIME_CPU_RSPNS",   "direction": "TO_A", "fields": [ {"id": "time", "type": "int32"} ] },
 		{ "id": "INTERNAL_TEMP_RSPNS",  	"direction": "TO_A", "fields": [ {"id": "temperature", "type": "int16"} ] },
-		{ "id": "MEASURE_RSPNS",        	"direction": "TO_A", "fields": [ {"id": "data_list", "type": "bytearray"} ] },
+
 		{ "id": "CHANNEL_STATE_RSPNS",      "direction": "TO_A", "fields": [ {"id": "channel_enable_flags", "type": "byte"} ] },
+		{ "id": "MEASURED_NO_RSPNS",        "direction": "TO_A", "fields": [ {"id": "measure_num", "type": "int16"} ] },
+		{ "id": "MEASURE_RSPNS",        	"direction": "TO_A", "fields": [ {"id": "measure_bytes", "type": "bytearray"} ] },
+		{ "id": "MEASURE_TIME_RSPNS",       "direction": "TO_A", "fields": [ {"id": "measure_bytes", "type": "bytearray"} ] },
 		{ "id": "TEST_BYTES_RSPNS",     	"direction": "TO_A", "fields": [ {"id": "data_bytes", "type": "bytearray"} ] },
 		{ "id": "TEST_TEXT_RSPNS",      	"direction": "TO_A", "fields": [ {"id": "content", "type": "str"} ] }
     ]

@@ -8,10 +8,19 @@
 
 import unittest
 
-from testanalyzerlib.bytearraychannel import ByteArrayChannel
+from analyzerlib.bytearraychannel import ByteArrayChannel
 
 
 class ChannelTest(unittest.TestCase):
+    def test_write(self):
+        stream = bytearray()
+        host = ByteArrayChannel(stream)
+        sensor = ByteArrayChannel(stream)
+
+        host.write_byte(123)
+        received = sensor.read_byte()
+        self.assertEqual(received, 123)
+
     def test_communication(self):
         stream = bytearray()
         host = ByteArrayChannel(stream)

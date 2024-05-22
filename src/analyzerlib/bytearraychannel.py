@@ -17,13 +17,14 @@ class ByteArrayChannel(AbstractChannel):
         self.stream = stream  # communication medium
 
     def write_byte(self, number):
-        data_bytes = number.to_bytes(1, byteorder="big")
+        # data_bytes = number.to_bytes(1, byteorder="big")
+        data_bytes = bytearray([number])
         self.stream.extend(data_bytes)
 
     def read_byte(self):
         data_bytes = self.stream[:1]
         self._rem_front(1)
-        return data_bytes
+        return data_bytes[0]
 
     def write_bytes(self, data_bytes):
         self.stream.extend(data_bytes)

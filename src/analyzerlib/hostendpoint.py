@@ -8,6 +8,7 @@
 
 from random import randrange
 
+from analyzerlib.hostmessage import HostMessage
 from analyzerlib.sensormessage import SensorMessage
 from analyzerlib.hostconnector import HostConnector
 
@@ -25,6 +26,24 @@ class HostEndpoint(HostConnector):
     def receive_text(self):
         return self.channel.read_text()
 
+    def receive_measure_time(self):
+        command = self.channel.read_byte()
+        if command == SensorMessage.MEASURE_TIME_RSPNS:
+            data_size = self.channel.read_int(2)
+            measure_bytes = self.channel.read_bytes(data_size)
+            return [0x0b, measure_bytes]
+
+        callback = self.lookup_dict.get(command)
+        if callback is not None:
+            return callback()
+
+        if command is None:
+            # no incoming message (timeout)
+            return None
+
+        # unknown message
+        return [None, command]
+
     # useful in case of receiving invalid message
     def restore_connection(self):
         while True:
@@ -37,7 +56,7 @@ class HostEndpoint(HostConnector):
             print("sending test message")
             rand_num = randrange(256)  # nosec
             rand_byte = bytes([rand_num])
-            self.send_TEST_BYTES_RQST(rand_byte, 1)
+            self.send_TEST_BYTES_RQST(rand_byte, 1, 1)
             received = self.receive_message()
             print("xxxx:", rand_byte, received)
             if received[0] != SensorMessage.TEST_BYTES_RSPNS:
@@ -45,3 +64,17 @@ class HostEndpoint(HostConnector):
             received_data = received[1]
             if received_data == rand_byte:
                 break
+
+    def print_message(self, message):
+        if message is None:
+            print(f"message: {message}")
+            return
+        command = message[0]
+        if command != SensorMessage.UNKNOWN_REQUEST_RSPNS:
+            message_name = SensorMessage.get_id_from_value(command)
+            print(f"message: {message_name} data: {message}")
+        else:
+            unknown_command = message[1]            
+            message_name = SensorMessage.get_id_from_value(command)
+            unknown_name = HostMessage.get_id_from_value(unknown_command)
+            print(f"message: {message_name} data: {message} unknown command: {unknown_name}")

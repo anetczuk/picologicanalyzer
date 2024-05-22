@@ -5,79 +5,215 @@
 #
 
 from analyzerlib.channel import AbstractChannel
-from analyzerlib.logger import Logger
 
 
 # pylint: disable=C0103
 
 
 class SensorConnector:
-    def __init__(self, channel: AbstractChannel, logger: Logger):
+    def __init__(self, channel: AbstractChannel):
         self.channel: AbstractChannel = channel  # communication medium
-        self.logger: Logger = logger
+
+        # under MicroPython lookup dict is significantly faster than if-else chain
+        self.lookup_dict = {
+                            0x01: self._handle_SET_KBD_INTR_RQST,  # SET_KBD_INTR_RQST
+                            0x02: self._handle_TERMINATE_RQST,  # TERMINATE_RQST
+                            0x04: self._handle_SET_INTERNAL_LED_RQST,  # SET_INTERNAL_LED_RQST
+                            0x05: self._handle_CURRENT_TIME_MS_RQST,  # CURRENT_TIME_MS_RQST
+                            0x06: self._handle_CURRENT_TIME_US_RQST,  # CURRENT_TIME_US_RQST
+                            0x07: self._handle_CURRENT_TIME_CPU_RQST,  # CURRENT_TIME_CPU_RQST
+                            0x08: self._handle_INTERNAL_TEMP_RQST,  # INTERNAL_TEMP_RQST
+                            0x09: self._handle_CHANNEL_STATE_RQST,  # CHANNEL_STATE_RQST
+                            0x0a: self._handle_SELECT_CHANNELS_RQST,  # SELECT_CHANNELS_RQST
+                            0x0b: self._handle_SET_PROBE_DELAY_US_RQST,  # SET_PROBE_DELAY_US_RQST
+                            0x0c: self._handle_MEASURED_NO_RQST,  # MEASURED_NO_RQST
+                            0x0d: self._handle_MEASURE_RQST,  # MEASURE_RQST
+                            0x0e: self._handle_MEASURE_TR_RQST,  # MEASURE_TR_RQST
+                            0x0f: self._handle_MEASURE_TIME_RQST,  # MEASURE_TIME_RQST
+                            0x10: self._handle_MEASURE_TIME_TR_RQST,  # MEASURE_TIME_TR_RQST
+                            0x11: self._handle_TRANSFER_TIME_RQST,  # TRANSFER_TIME_RQST
+                            0x12: self._handle_PROBE_TIME_RQST,  # PROBE_TIME_RQST
+                            0x13: self._handle_TEST_BYTES_RQST,  # TEST_BYTES_RQST
+                            0x14: self._handle_TEST_TEXT_RQST,  # TEST_TEXT_RQST
+                            0x15: self._handle_TEST_MEASURE_TIME_RQST,  # TEST_MEASURE_TIME_RQST
+                            }
+
+    def wait_message(self):
+        while True:
+            message = self.receive_message()
+            if message is None:
+                # no message
+                continue
+            if message[0] is None:
+                # unknown message
+                continue
+            return message
+
+    def wait_message_type(self, message_type):
+        while True:
+            message = self.receive_message()
+            if message is None:
+                # no message
+                continue
+            if message[0] is not message_type:
+                # message type not match
+                continue
+            return message
 
     def receive_message(self):
-        command = self.channel.read_int(1)
+        command = self.channel.read_byte()
 
-        if command is None:
-            # no incoming message
-            return None
+        callback = self.lookup_dict.get(command)
+        if callback is not None:
+            return callback()
 
-        # SET_KBD_INTR_RQST
-        ## parameters:
-        ##    new_state: bool
-        if command == 0x01:
-            new_state = self.channel.read_int(1)
-            return [command, new_state]
+        self._handle_unknown_command(command)
 
-        # SET_INTERNAL_LED_RQST
-        ## parameters:
-        ##    new_state: bool
-        if command == 0x02:
-            new_state = self.channel.read_int(1)
-            return [command, new_state]
-
-        # INTERNAL_TEMP_RQST
-        if command == 0x03:
-            # no fields
-            return [command]
-
-        # MEASURE_RQST
-        ## parameters:
-        ##    data_size: int16
-        ##    transfer_num: int16
-        if command == 0x04:
-            data_size = self.channel.read_int(2)
-            transfer_num = self.channel.read_int(2)
-            return [command, data_size, transfer_num]
-
-        # CHANNEL_STATE_RQST
-        if command == 0x05:
-            # no fields
-            return [command]
-
-        # TEST_BYTES_RQST
-        ## parameters:
-        ##    data_bytes: bytearray
-        ##    transfer_num: int16
-        if command == 0x06:
-            data_size = self.channel.read_int(2)
-            data_bytes = self.channel.read_bytes(data_size)
-            transfer_num = self.channel.read_int(2)
-            return [command, data_bytes, transfer_num]
-
-        # TEST_TEXT_RQST
-        ## parameters:
-        ##    content: str
-        ##    transfer_num: int16
-        if command == 0x07:
-            content = self.channel.read_text()
-            transfer_num = self.channel.read_int(2)
-            return [command, content, transfer_num]
-
-        if self.logger:
-            self.logger.error(f"unknown message: '{command}' '{chr(command)}'")
+        # unknown message
         return [None, command]
+
+    def _handle_unknown_command(self, command):
+        # override if needed
+        pass
+
+    # SET_KBD_INTR_RQST
+    ## parameters:
+    ##    new_state: bool
+    def _handle_SET_KBD_INTR_RQST(self):
+        new_state = self.channel.read_byte()
+        return [0x01, new_state]
+
+    # TERMINATE_RQST
+    def _handle_TERMINATE_RQST(self):
+        # no fields
+        return [0x02]
+
+    # SET_INTERNAL_LED_RQST
+    ## parameters:
+    ##    new_state: bool
+    def _handle_SET_INTERNAL_LED_RQST(self):
+        new_state = self.channel.read_byte()
+        return [0x04, new_state]
+
+    # CURRENT_TIME_MS_RQST
+    def _handle_CURRENT_TIME_MS_RQST(self):
+        # no fields
+        return [0x05]
+
+    # CURRENT_TIME_US_RQST
+    def _handle_CURRENT_TIME_US_RQST(self):
+        # no fields
+        return [0x06]
+
+    # CURRENT_TIME_CPU_RQST
+    def _handle_CURRENT_TIME_CPU_RQST(self):
+        # no fields
+        return [0x07]
+
+    # INTERNAL_TEMP_RQST
+    def _handle_INTERNAL_TEMP_RQST(self):
+        # no fields
+        return [0x08]
+
+    # CHANNEL_STATE_RQST
+    def _handle_CHANNEL_STATE_RQST(self):
+        # no fields
+        return [0x09]
+
+    # SELECT_CHANNELS_RQST
+    ## parameters:
+    ##    channel_enable_flags: byte
+    def _handle_SELECT_CHANNELS_RQST(self):
+        channel_enable_flags = self.channel.read_byte()
+        return [0x0a, channel_enable_flags]
+
+    # SET_PROBE_DELAY_US_RQST
+    ## parameters:
+    ##    delay_us: int16
+    def _handle_SET_PROBE_DELAY_US_RQST(self):
+        delay_us = self.channel.read_int(2)
+        return [0x0b, delay_us]
+
+    # MEASURED_NO_RQST
+    def _handle_MEASURED_NO_RQST(self):
+        # no fields
+        return [0x0c]
+
+    # MEASURE_RQST
+    ## parameters:
+    ##    measure_num: int16
+    def _handle_MEASURE_RQST(self):
+        measure_num = self.channel.read_int(2)
+        return [0x0d, measure_num]
+
+    # MEASURE_TR_RQST
+    ## parameters:
+    ##    measure_num: int16
+    ##    transfer_num: int16
+    def _handle_MEASURE_TR_RQST(self):
+        measure_num = self.channel.read_int(2)
+        transfer_num = self.channel.read_int(2)
+        return [0x0e, measure_num, transfer_num]
+
+    # MEASURE_TIME_RQST
+    ## parameters:
+    ##    measure_num: int16
+    def _handle_MEASURE_TIME_RQST(self):
+        measure_num = self.channel.read_int(2)
+        return [0x0f, measure_num]
+
+    # MEASURE_TIME_TR_RQST
+    ## parameters:
+    ##    measure_num: byte
+    ##    transfer_num: byte
+    ##    params_multiplier: byte
+    def _handle_MEASURE_TIME_TR_RQST(self):
+        measure_num = self.channel.read_byte()
+        transfer_num = self.channel.read_byte()
+        params_multiplier = self.channel.read_byte()
+        return [0x10, measure_num, transfer_num, params_multiplier]
+
+    # TRANSFER_TIME_RQST
+    ## parameters:
+    ##    response_size: int16
+    def _handle_TRANSFER_TIME_RQST(self):
+        response_size = self.channel.read_int(2)
+        return [0x11, response_size]
+
+    # PROBE_TIME_RQST
+    ## parameters:
+    ##    probe_num: int16
+    def _handle_PROBE_TIME_RQST(self):
+        probe_num = self.channel.read_int(2)
+        return [0x12, probe_num]
+
+    # TEST_BYTES_RQST
+    ## parameters:
+    ##    data_bytes: bytearray
+    ##    transfer_num: int16
+    ##    data_multiplier: int16
+    def _handle_TEST_BYTES_RQST(self):
+        data_size = self.channel.read_int(2)
+        data_bytes = self.channel.read_bytes(data_size)
+        transfer_num = self.channel.read_int(2)
+        data_multiplier = self.channel.read_int(2)
+        return [0x13, data_bytes, transfer_num, data_multiplier]
+
+    # TEST_TEXT_RQST
+    ## parameters:
+    ##    content: str
+    ##    transfer_num: int16
+    def _handle_TEST_TEXT_RQST(self):
+        content = self.channel.read_text()
+        transfer_num = self.channel.read_int(2)
+        return [0x14, content, transfer_num]
+
+    # TEST_MEASURE_TIME_RQST
+    ## parameters:
+    ##    measure_num: int16
+    def _handle_TEST_MEASURE_TIME_RQST(self):
+        measure_num = self.channel.read_int(2)
+        return [0x15, measure_num]
 
     ## ============= send methods ===============
 
@@ -85,40 +221,85 @@ class SensorConnector:
     ## parameters:
     ##    message: byte
     def send_UNKNOWN_REQUEST_RSPNS(self, message):
-        self.channel.write_int(0x01, 1)  # "UNKNOWN_REQUEST_RSPNS"
-        self.channel.write_int(message, 1)
+        self.channel.write_byte(0x01)  # "UNKNOWN_REQUEST_RSPNS"
+        self.channel.write_byte(message)
 
-    ## send 'SET_KBD_INTR_RSPNS' message
-    def send_SET_KBD_INTR_RSPNS(self):
-        self.channel.write_int(0x02, 1)  # "SET_KBD_INTR_RSPNS"
+    ## send 'ACKNOWLEDGE_RSPNS' message
+    ## parameters:
+    ##    message: byte
+    def send_ACKNOWLEDGE_RSPNS(self, message):
+        self.channel.write_byte(0x02)  # "ACKNOWLEDGE_RSPNS"
+        self.channel.write_byte(message)
+
+    ## send 'CURRENT_TIME_MS_RSPNS' message
+    ## parameters:
+    ##    time: int32
+    def send_CURRENT_TIME_MS_RSPNS(self, time):
+        self.channel.write_byte(0x04)  # "CURRENT_TIME_MS_RSPNS"
+        self.channel.write_int(time, 4)
+
+    ## send 'CURRENT_TIME_US_RSPNS' message
+    ## parameters:
+    ##    time: int32
+    def send_CURRENT_TIME_US_RSPNS(self, time):
+        self.channel.write_byte(0x05)  # "CURRENT_TIME_US_RSPNS"
+        self.channel.write_int(time, 4)
+
+    ## send 'CURRENT_TIME_CPU_RSPNS' message
+    ## parameters:
+    ##    time: int32
+    def send_CURRENT_TIME_CPU_RSPNS(self, time):
+        self.channel.write_byte(0x06)  # "CURRENT_TIME_CPU_RSPNS"
+        self.channel.write_int(time, 4)
 
     ## send 'INTERNAL_TEMP_RSPNS' message
     ## parameters:
     ##    temperature: int16
     def send_INTERNAL_TEMP_RSPNS(self, temperature):
-        self.channel.write_int(0x03, 1)  # "INTERNAL_TEMP_RSPNS"
+        self.channel.write_byte(0x07)  # "INTERNAL_TEMP_RSPNS"
         self.channel.write_int(temperature, 2)
-
-    ## send 'MEASURE_RSPNS' message
-    ## parameters:
-    ##    data_list: bytearray
-    def send_MEASURE_RSPNS(self, data_list):
-        self.channel.write_int(0x04, 1)  # "MEASURE_RSPNS"
-        self.channel.write_int(len(data_list), 2)
-        self.channel.write_bytes(data_list)
 
     ## send 'CHANNEL_STATE_RSPNS' message
     ## parameters:
     ##    channel_enable_flags: byte
     def send_CHANNEL_STATE_RSPNS(self, channel_enable_flags):
-        self.channel.write_int(0x05, 1)  # "CHANNEL_STATE_RSPNS"
-        self.channel.write_int(channel_enable_flags, 1)
+        self.channel.write_byte(0x08)  # "CHANNEL_STATE_RSPNS"
+        self.channel.write_byte(channel_enable_flags)
+
+    ## send 'MEASURED_NO_RSPNS' message
+    ## parameters:
+    ##    measure_num: int16
+    def send_MEASURED_NO_RSPNS(self, measure_num):
+        self.channel.write_byte(0x09)  # "MEASURED_NO_RSPNS"
+        self.channel.write_int(measure_num, 2)
+
+    ## send 'MEASURE_RSPNS' message
+    ## parameters:
+    ##    measure_bytes: bytearray
+    def send_MEASURE_RSPNS(self, measure_bytes):
+        self.channel.write_byte(0x0a)  # "MEASURE_RSPNS"
+        self.channel.write_int(len(measure_bytes), 2)
+        self.channel.write_bytes(measure_bytes)
+
+    ## send 'MEASURE_TIME_RSPNS' message
+    ## parameters:
+    ##    measure_bytes: bytearray
+    def send_MEASURE_TIME_RSPNS(self, measure_bytes):
+        self.channel.write_byte(0x0b)  # "MEASURE_TIME_RSPNS"
+        self.channel.write_int(len(measure_bytes), 2)
+        self.channel.write_bytes(measure_bytes)
+
+        # data = bytearray()
+        # data.append(0x0b)
+        # data.extend( len(measure_bytes).to_bytes(2, "big") )
+        # data.extend( measure_bytes )
+        # self.channel.write_bytes(data)
 
     ## send 'TEST_BYTES_RSPNS' message
     ## parameters:
     ##    data_bytes: bytearray
     def send_TEST_BYTES_RSPNS(self, data_bytes):
-        self.channel.write_int(0x06, 1)  # "TEST_BYTES_RSPNS"
+        self.channel.write_byte(0x0c)  # "TEST_BYTES_RSPNS"
         self.channel.write_int(len(data_bytes), 2)
         self.channel.write_bytes(data_bytes)
 
@@ -126,5 +307,5 @@ class SensorConnector:
     ## parameters:
     ##    content: str
     def send_TEST_TEXT_RSPNS(self, content):
-        self.channel.write_int(0x07, 1)  # "TEST_TEXT_RSPNS"
+        self.channel.write_byte(0x0d)  # "TEST_TEXT_RSPNS"
         self.channel.write_text(content)
