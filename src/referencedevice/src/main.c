@@ -39,16 +39,40 @@ void blink_led() {
 
 
 /// state change frequencies:
-/// PB0 100 Hz
-/// PB1  50 Hz
-/// PB2  25 Hz
-/// PB3  12.5 Hz
-/// PB4  6.25 Hz
+/// delay 10 ms:
+///   PB0 100 Hz
+///   PB1  50 Hz
+///   PB2  25 Hz
+///   PB3  12.5 Hz
+///   PB4  6.25 Hz
+///
+/// delay 1 ms:
+///   PB0 1000 Hz
+///   PB1  500 Hz
+///   PB2  250 Hz
+///   PB3  125 Hz
+///   PB4  62.5 Hz
+///
+/// delay 130 us:
+///   PB0 7692 Hz
+///   PB1 3846 Hz
+///   PB2 1923 Hz
+///   PB3  961 Hz
+///   PB4  481 Hz
+///
+/// delay 100 us:
+///   PB0 10000 Hz
+///   PB1  5000 Hz
+///   PB2  2500 Hz
+///   PB3  1250 Hz
+///   PB4   625 Hz
 void standard_counter() {
     unsigned int counter = 0;		/// 16 bit
 
     while(1) {
-    	_delay_ms(10);
+    	_delay_us(100);
+//    	_delay_ms(1);
+//    	_delay_ms(10);
 
     	PORTB = counter;
 
