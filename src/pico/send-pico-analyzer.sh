@@ -28,15 +28,19 @@ PROJ_DIR="$SCRIPT_DIR/picoanalyzer"
 
 help_info() {
     echo "parameters:"
-    echo "      --help      this message"
-    echo "      --upload    upload project, otherwise run main.py script"
-    echo "      --run       upload and run particular script (default main.py)"
+    echo "      --help           this message"
+    echo "      --upload         upload project"
+    echo "      --upload-main    upload single file as main script"
+    echo "      --upload-runner  upload single file as runner script"
+    echo "      --run            upload and run particular script (default main.py)"
     exit 0
 }
 
 
 RUN_SCRIPT=""
 UPLOAD=""
+UPLOAD_MAIN=""
+UPLOAD_RUNNER=""
 
 POSITIONAL_ARGS=()
 
@@ -55,6 +59,18 @@ while [[ $# -gt 0 ]]; do
     --upload)
       UPLOAD=YES
       shift # past argument
+      ;;
+
+    --upload-main)
+      UPLOAD_MAIN="$2"
+      shift # past argument
+      shift # past value
+      ;;
+
+    --upload-runner)
+      UPLOAD_RUNNER="$2"
+      shift # past argument
+      shift # past value
       ;;
 
     -*|--*)
@@ -76,10 +92,42 @@ if [[ ! -z $UPLOAD ]]; then
     # reset previous connection (otherwise rshell will hang on connection)
     sudo ~/.local/bin/ampy --port /dev/ttyACM0 reset
 
-	sudo rshell mkdir /pyboard/analyzerlib
-	sudo rshell cp $PROJ_DIR/../../analyzerlib/* /pyboard/analyzerlib
+	if [ -d "$PROJ_DIR/__pycache__" ]; then
+		! rm -r $PROJ_DIR/__pycache__
+	fi
+	sudo rshell rsync $PROJ_DIR /pyboard
 
-    sudo rshell cp $PROJ_DIR/* /pyboard
+	if [ -d "$PROJ_DIR/../../analyzerlib/__pycache__" ]; then
+		! rm -r $PROJ_DIR/../../analyzerlib/__pycache__
+	fi
+	sudo rshell rsync $PROJ_DIR/../../analyzerlib /pyboard/analyzerlib
+
+    echo "upload completed"
+    exit 0
+fi
+
+
+if [[ ! -z $UPLOAD_MAIN ]]; then
+    echo "uploading main $UPLOAD_MAIN"
+
+    # reset previous connection (otherwise rshell will hang on connection)
+    sudo ~/.local/bin/ampy --port /dev/ttyACM0 reset
+
+	sudo rshell cp $UPLOAD_MAIN /pyboard/main.py
+
+    echo "upload completed"
+    exit 0
+fi
+
+
+if [[ ! -z $UPLOAD_RUNNER ]]; then
+    echo "uploading runner $UPLOAD_RUNNER"
+
+    # reset previous connection (otherwise rshell will hang on connection)
+    sudo ~/.local/bin/ampy --port /dev/ttyACM0 reset
+
+	sudo rshell cp $PROJ_DIR/main.py /pyboard/main.py
+	sudo rshell cp $UPLOAD_RUNNER /pyboard/runner.py
 
     echo "upload completed"
     exit 0
