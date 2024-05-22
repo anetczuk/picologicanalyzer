@@ -17,12 +17,22 @@ class SerialChannel(AbstractChannel):
         super().__init__()
         self.serial: serial.Serial = serialobj  # communication medium
 
+    def reset_input_buffer(self):
+        self.serial.reset_input_buffer()
+
+    def reset_output_buffer(self):
+        self.serial.reset_output_buffer()
+
     def write_byte(self, number):
-        data_bytes = number.to_bytes(1, byteorder="big")
+        # data_bytes = number.to_bytes(1, byteorder="big")
+        data_bytes = bytearray([number])
         self.serial.write(data_bytes)
 
     def read_byte(self):
-        return self.serial.read_until(size=1)
+        bytes_array = self.serial.read_until(size=1)
+        if not bytes_array:
+            return None
+        return bytes_array[0]
 
     def write_bytes(self, data_bytes: bytes):
         self.serial.write(data_bytes)

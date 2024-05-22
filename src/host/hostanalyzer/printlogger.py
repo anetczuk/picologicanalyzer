@@ -17,6 +17,7 @@ try:
 
     mpython = True
 except ImportError:
+    import traceback
     mpython = False
 
 
@@ -51,4 +52,4 @@ class PrintLogger(Logger):
             sys.print_exception(exception, self.file_obj)  # pylint: disable=E1101
         else:
             curr_time = get_current_time_str()
-            print(f"{curr_time} ERROR: {exception}")
+            print(f"{curr_time} ERROR: {traceback.format_exc()}")

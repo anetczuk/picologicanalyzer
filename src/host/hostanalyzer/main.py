@@ -9,65 +9,107 @@
 
 import sys
 import time
+import multiprocessing
+from threading import Thread
+
+# import signal
 import serial
 
-from analyzerlib.hostendpoint import HostEndpoint
-from hostanalyzer.serialchannel import SerialChannel
+from hostanalyzer.plot import AnimatedPlot, DataStream
+from hostanalyzer.connector import SerialConnector
 
 
-def test_bytes_transfer(connector):
-    # there is maximum transfer 200k B/s
-    # tsize 128 seems to be optimal value
-    for tsize in (1, 64, 100, 128, 160, 255):
-        count = 0
-        transfers = 2000  # max 65535
-        connector.send_TEST_BYTES_REQUEST(b"\x01" * tsize, transfers)
-        start_time = time.time()
-        for _ in range(0, transfers):
-            response = connector.receive_message()
-            count += len(response[1])
-        transfer_time = time.time() - start_time
-        print(
-            f"size: {tsize}: transfer: {transfer_time} secs, iters: {transfers}"
-            f", iter: {transfer_time / transfers} secs"
-            f", bytes: {count}, {count / transfer_time} bytes/sec"
-        )
+# signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 
-def test_text_transfer(connector):
-    # there is maximum transfer 200k B/s
-    # tsize 128 seems to be optimal value
-    for tsize in (1, 64, 100, 128, 160, 255):
-        # for tsize in (1, 50, 100, 200, 400):
-        count = 0
-        transfers = 2000  # max 65535
-        connector.send_TEST_TEXT_REQUEST("a" * tsize, transfers)
-        start_time = time.time()
-        for _ in range(0, transfers):
-            response = connector.receive_message()
-            count += len(response[1])
-        transfer_time = time.time() - start_time
-        print(
-            f"size: {tsize}: transfer: {transfer_time} secs, iters: {transfers}"
-            f", iter: {transfer_time / transfers} secs"
-            f", chars: {count}, {count / transfer_time} chars/sec"
-        )
+class EventWatchdog:
+    def __init__(self, name, event, callback):
+        self.name = name
+        self.event = event
+        self.callback = callback
+        self.running = True
+        self.thread = None
+
+    def watch(self):
+        self.thread = Thread(target=self._watch)
+        self.thread.start()
+
+    def stop_watchdog(self):
+        self.running = False
+
+    def join(self):
+        self.thread.join()
+
+    def _watch(self):
+        while self.running:
+            if self.event.is_set():
+                # print(f"{self.name}: detected event")
+                self.callback()
+                break
+            time.sleep(0.5)
 
 
-def main():
-    print("connecting")
+class ConnectionStream(DataStream):
+    def __init__(self, connection):
+        self.data_connection = connection
 
+    def empty(self):
+        return not self.data_connection.poll()
+
+    def get(self):
+        return self.data_connection.recv()
+
+
+def device_runner(connection, device_close_request, device_close_event):
     # open a serial connection
     with serial.Serial(
         port="/dev/ttyACM0", parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, timeout=1
     ) as medium:
-        medium.flush()
-        channel = SerialChannel(medium)
-        connector = HostEndpoint(channel)
+        # medium.flush()
 
-        # test_bytes_transfer(connector)
-        test_text_transfer(connector)
-        #     time.sleep(1)
+        device = SerialConnector(medium, connection)
+
+        # watch for device close requests
+        close_callback = device.stop
+        watchdog = EventWatchdog("device close request watchdog", device_close_request, close_callback)
+        watchdog.watch()
+
+        try:
+            device.run()
+
+        finally:
+            device.logger.info("device receiver closed")
+            device_close_event.set()
+
+
+def main():
+    # signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    parent_conn, child_conn = multiprocessing.Pipe()
+
+    device_close_request = multiprocessing.Event()
+    device_close_event = multiprocessing.Event()
+
+    device_process = multiprocessing.Process(
+        target=device_runner, args=(parent_conn, device_close_request, device_close_event)
+    )
+    device_process.start()
+
+    # plot have to be in main thread
+    data_stream = ConnectionStream(child_conn)
+
+    aplot = AnimatedPlot(data_stream, plot_items_number=600, interval=150)
+
+    # watch for device termination
+    close_callback = aplot.close
+    watchdog = EventWatchdog("device close watchdog", device_close_event, close_callback)
+    watchdog.watch()
+
+    aplot.show()
+    print("plot closed")
+
+    device_close_request.set()
+    device_process.join()
 
     return 0
 
