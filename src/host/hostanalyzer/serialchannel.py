@@ -29,7 +29,7 @@ class SerialChannel(AbstractChannel):
         self.serial.write(data_bytes)
 
     def read_byte(self):
-        bytes_array = self.serial.read_until(size=1)
+        bytes_array = self.serial.read(size=1)
         if not bytes_array:
             return None
         return bytes_array[0]
@@ -41,16 +41,22 @@ class SerialChannel(AbstractChannel):
         # "serial.read_until()" interrupts after receiving character '\n', so
         # it won't receive desired number of bytes
         # to make it work properly receive data in loop
+
+        if self.serial.in_waiting >= length:
+            return self.serial.read(length)
+
+        # red rest of data
+        ret_data = bytearray()
         receive_count = length
-        received_data = bytes()
         while receive_count > 0:
-            received = self.serial.read_until(size=receive_count)
-            if not received:
+            received_data: bytes = self.serial.read(receive_count)
+            if not received_data:
                 # no data in buffer
                 break
-            receive_count -= len(received)
-            received_data += received
-        return received_data
+            receive_count -= len(received_data)
+            #ret_data += received_data
+            ret_data.extend(received_data)
+        return bytes(ret_data)
 
     def write_int(self, number, length):
         if number >= math.pow(2, 8 * length):

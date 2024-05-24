@@ -92,17 +92,16 @@ class Listener:
             HostMessage.INTERNAL_TEMP_RQST: self._handle_INTERNAL_TEMP_RQST,
             HostMessage.CHANNEL_STATE_RQST: self._handle_CHANNEL_STATE_RQST,
             HostMessage.SELECT_CHANNELS_RQST: self._handle_SELECT_CHANNELS_RQST,
-            HostMessage.SET_PROBE_DELAY_US_RQST: self._handle_SET_PROBE_DELAY_US_RQST,
+            HostMessage.SET_MEASURE_BUFF_SIZE_RQST: self._handle_SET_MEASURE_BUFF_SIZE_RQST,
             HostMessage.MEASURED_NO_RQST: self._handle_MEASURED_NO_RQST,
             HostMessage.MEASURE_RQST: self._handle_MEASURE_RQST,
             HostMessage.MEASURE_TR_RQST: self._handle_MEASURE_TR_RQST,
             HostMessage.MEASURE_TIME_RQST: self._handle_MEASURE_TIME_RQST,
             HostMessage.MEASURE_TIME_TR_RQST: self._handle_MEASURE_TIME_TR_RQST,
-            HostMessage.TRANSFER_TIME_RQST: self._handle_TRANSFER_TIME_RQST,
-            HostMessage.PROBE_TIME_RQST: self._handle_PROBE_TIME_RQST,
+            HostMessage.TEST_TRANSFER_TIME_RQST: self._handle_TEST_TRANSFER_TIME_RQST,
+            HostMessage.TEST_MEASURE_TIME_RQST: self._handle_TEST_MEASURE_TIME_RQST,
             HostMessage.TEST_BYTES_RQST: self._handle_TEST_BYTES_RQST,
             HostMessage.TEST_TEXT_RQST: self._handle_TEST_TEXT_RQST,
-            HostMessage.TEST_MEASURE_TIME_RQST: self._handle_TEST_MEASURE_TIME_RQST,
         }
 
         self.running_loop: bool = True
@@ -216,7 +215,7 @@ class Listener:
         self.connector.send_CHANNEL_STATE_RSPNS(channel_flags)
         return True
 
-    def _handle_SET_PROBE_DELAY_US_RQST(self, command_data):
+    def _handle_SET_MEASURE_BUFF_SIZE_RQST(self, command_data):
         command = command_data[0]
         self.connector.send_UNKNOWN_REQUEST_RSPNS(command)
         return True
@@ -265,6 +264,34 @@ class Listener:
 
         return True
 
+    def _handle_TEST_MEASURE_TIME_RQST(self, command_data):
+        time_value1 = time.ticks_us()
+        measurements_list = self.probe.time_value_list(command_data[1])
+        time_value2 = time.ticks_us()
+        measures_data = measuretimemsg.data_to_bytearray(measurements_list)
+        time_value3 = time.ticks_us()
+        self.connector.send_MEASURE_TIME_RSPNS(measures_data)
+        time_value4 = time.ticks_us()
+        self.connector.send_CURRENT_TIME_US_RSPNS(time_value1)
+        self.connector.send_CURRENT_TIME_US_RSPNS(time_value2)
+        self.connector.send_CURRENT_TIME_US_RSPNS(time_value3)
+        self.connector.send_CURRENT_TIME_US_RSPNS(time_value4)
+        return True
+
+    def _handle_TEST_TRANSFER_TIME_RQST(self, command_data):
+        response_size = command_data[1]
+        response = bytearray()
+        if response_size > 0:
+            response = bytearray([0] * response_size)
+
+        time_value1 = time.ticks_us()
+        self.connector.send_TEST_BYTES_RSPNS(response)
+        time_value2 = time.ticks_us()
+
+        self.connector.send_CURRENT_TIME_US_RSPNS(time_value1)
+        self.connector.send_CURRENT_TIME_US_RSPNS(time_value2)
+        return True
+
     def _handle_TEST_BYTES_RQST(self, command_data):
         data_content = command_data[1]
         transfer_num = command_data[2]
@@ -282,46 +309,4 @@ class Listener:
         # logger.info(f"sending test text data: {data_content} {transfer_num}")
         for _ in range(0, transfer_num):
             self.connector.send_TEST_TEXT_RSPNS(data_content)
-        return True
-
-    def _handle_TEST_MEASURE_TIME_RQST(self, command_data):
-        time_value1 = time.ticks_us()
-        measurements_list = self.probe.time_value_list(command_data[1])
-        time_value2 = time.ticks_us()
-        measures_data = measuretimemsg.data_to_bytearray(measurements_list)
-        time_value3 = time.ticks_us()
-        self.connector.send_MEASURE_TIME_RSPNS(measures_data)
-        time_value4 = time.ticks_us()
-        self.connector.send_CURRENT_TIME_US_RSPNS(time_value1)
-        self.connector.send_CURRENT_TIME_US_RSPNS(time_value2)
-        self.connector.send_CURRENT_TIME_US_RSPNS(time_value3)
-        self.connector.send_CURRENT_TIME_US_RSPNS(time_value4)
-        return True
-
-    def _handle_TRANSFER_TIME_RQST(self, command_data):
-        response_size = command_data[1]
-        response = bytearray()
-        if response_size > 0:
-            response = bytearray([0] * response_size)
-
-        time_value = time.ticks_us()
-        self.connector.send_CURRENT_TIME_US_RSPNS(time_value)
-
-        self.connector.send_TEST_BYTES_RSPNS(response)
-
-        time_value = time.ticks_us()
-        self.connector.send_CURRENT_TIME_US_RSPNS(time_value)
-        return True
-
-    def _handle_PROBE_TIME_RQST(self, command_data):
-        probe_num = command_data[1]
-
-        # probe = self.probe.probe
-        start_time = time.ticks_us()
-        for _ in range(0, probe_num):
-            self.probe.value()  # int
-        end_time = time.ticks_us()
-        diff_time = end_time - start_time
-
-        self.connector.send_CURRENT_TIME_US_RSPNS(diff_time)
         return True

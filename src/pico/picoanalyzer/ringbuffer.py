@@ -108,6 +108,22 @@ class TimeValueRingBuffer:
         self.index_put = capacity - 1  # index of last 'put' operation
         self.index_get = capacity - 1  # index of last 'get' operation
 
+    def set_capacity(self, capacity):
+        if capacity == self.capacity:
+            return
+        if capacity > self.capacity:
+            self.timestamp_data = array.array("L", (0 for _ in range(capacity)))
+            self.value_data = array.array("B", (0 for _ in range(capacity)))
+            self.capacity = capacity
+            self.index_put = capacity - 1  # index of last 'put' operation
+            self.index_get = capacity - 1  # index of last 'get' operation
+        else:
+            self.capacity = capacity
+            self.index_put = capacity - 1  # index of last 'put' operation
+            self.index_get = capacity - 1  # index of last 'get' operation
+            self.timestamp_data = array.array("L", (0 for _ in range(capacity)))
+            self.value_data = array.array("B", (0 for _ in range(capacity)))
+
     def is_empty(self):
         return self.index_put == self.index_get
 
@@ -123,11 +139,12 @@ class TimeValueRingBuffer:
         #     self.curr_size += 1
 
         # modulo is slightly faster than if
-        self.index_put = (self.index_put + 1) % self.capacity
-        if self.index_put == self.index_get:
+        next_index_put = (self.index_put + 1) % self.capacity
+        self.timestamp_data[next_index_put] = timestamp
+        self.value_data[next_index_put] = value  # ~5 us slower than writing to single variable
+        if next_index_put == self.index_get:
             self.index_get = (self.index_get + 1) % self.capacity
-        self.timestamp_data[self.index_put] = timestamp
-        self.value_data[self.index_put] = value  # ~5 us slower than writing to single variable
+        self.index_put = next_index_put
 
         # item = self.data[self.index_put]
         # item[0] = timestamp
@@ -135,13 +152,13 @@ class TimeValueRingBuffer:
 
     def put_pin(self, pin):
         # modulo is slightly faster than if
-        index_put = (self.index_put + 1) % self.capacity  # local index 5 us faster than using object's member
-        self.timestamp_data[index_put] = time.ticks_us()  # pylint: disable=E1101
+        next_index_put = (self.index_put + 1) % self.capacity  # local index 5 us faster than using object's member
+        self.timestamp_data[next_index_put] = time.ticks_us()  # pylint: disable=E1101
         # ~5 us slower than writing to single variable
-        self.value_data[index_put] = pin.value()  # ~23us
-        self.index_put = index_put
-        if self.index_put == self.index_get:
+        self.value_data[next_index_put] = pin.value()  # ~23us
+        if next_index_put == self.index_get:
             self.index_get = (self.index_get + 1) % self.capacity
+        self.index_put = next_index_put
 
     # for tests only
     def next(self):

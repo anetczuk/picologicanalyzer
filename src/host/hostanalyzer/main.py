@@ -65,8 +65,8 @@ def device_runner(connection, device_close_request, device_close_event):
     with serial.Serial(
         port="/dev/ttyACM0", parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, timeout=1
     ) as medium:
-        # medium.flush()
-
+        medium.flush()
+        medium.reset_input_buffer()
         device = SerialConnector(medium, connection)
 
         # watch for device close requests

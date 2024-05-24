@@ -6,9 +6,11 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+import sys
 import abc
 import signal
 from queue import Queue
+import traceback
 
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -78,39 +80,44 @@ class AnimatedPlot:
 
     # This function is called periodically from FuncAnimation
     def _draw(self, i):
-        # Draw x and y lists
-        self.ax.clear()
-
-        # Add x and y to lists
-        # 'self.data_stream' contains state changes, so to draw square signal plot
-        # additional points (with previous value) have to be added
-        prev_val = 0
-        if self.ys:
-            prev_val = self.ys[-1]
-        while not self.data_stream.empty():
-            # data_time = dt.datetime.now().strftime('%H:%M:%S.%f')
-            queue_list = self.data_stream.get()
-            for queue_data in queue_list:
-                data_time = queue_data[0]
-                data_value = queue_data[1]
-                self.xs.append((data_time - 1) / 1000000)
-                self.ys.append(prev_val)
-                prev_val = data_value
-                self.xs.append(data_time / 1000000)
-                self.ys.append(data_value)
-
-        # cut plot array
-        self.xs = self.xs[-self.plot_items_number :]
-        self.ys = self.ys[-self.plot_items_number :]
-
-        self.ax.plot(self.xs, self.ys)
-
-        # Format plot
-        # plt.xticks(rotation=45, ha='right')
-        # plt.xticks(ticks=[], rotation=45, ha='right')
-        plt.subplots_adjust(bottom=0.30)
-        # plt.title('TMP102 Temperature over Time')
-        # plt.ylabel('Temperature (deg C)')
+        try:
+            # Draw x and y lists
+            self.ax.clear()
+    
+            # Add x and y to lists
+            # 'self.data_stream' contains state changes, so to draw square signal plot
+            # additional points (with previous value) have to be added
+            prev_val = 0
+            if self.ys:
+                prev_val = self.ys[-1]
+            while not self.data_stream.empty():
+                # data_time = dt.datetime.now().strftime('%H:%M:%S.%f')
+                queue_list = self.data_stream.get()
+                for queue_data in queue_list:
+                    data_time = queue_data[0]
+                    data_value = queue_data[1]
+                    self.xs.append((data_time - 1) / 1000000)
+                    self.ys.append(prev_val)
+                    prev_val = data_value
+                    self.xs.append(data_time / 1000000)
+                    self.ys.append(data_value)
+    
+            # cut plot array
+            self.xs = self.xs[-self.plot_items_number :]
+            self.ys = self.ys[-self.plot_items_number :]
+    
+            self.ax.plot(self.xs, self.ys)
+    
+            # Format plot
+            # plt.xticks(rotation=45, ha='right')
+            # plt.xticks(ticks=[], rotation=45, ha='right')
+            plt.subplots_adjust(bottom=0.30)
+            # plt.title('TMP102 Temperature over Time')
+            # plt.ylabel('Temperature (deg C)')
+        except BaseException as exc:
+            # sys.exit(1)
+            print("got exception:", exc)
+            print(traceback.format_exc())
 
     def show(self):
         plt.show()

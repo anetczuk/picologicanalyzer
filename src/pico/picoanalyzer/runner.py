@@ -145,16 +145,21 @@ class MeasureListener(Listener):
         # self._scheduled_callback_ref = self._scheduled_callback
         self.irq_counter = 0
 
-    def _handle_SET_PROBE_DELAY_US_RQST(self, command_data):
+    def _handle_SET_MEASURE_BUFF_SIZE_RQST(self, command_data):
         command = command_data[0]
-        self.connector.send_UNKNOWN_REQUEST_RSPNS(command)
-        return True
+        buffer_size = command_data[1]
 
-        # command = command_data[0]
-        # delay_us = command_data[1]
-        # self.measurement.probe_delay_us = delay_us
-        # self.send_ACKNOWLEDGE_RSPNS(command)
-        # return True
+        self.logger.info(f"disabling interupts")
+
+        self.stop_probe()               # start of critical section
+        self.logger.info(f"changing buffer size to {buffer_size}")
+        self.measure_queue.set_capacity(buffer_size)
+        self.logger.info(f"enabling interupts")
+        self.start_probe()              # end of critical section
+
+        self.logger.info(f"sending ack")
+        self.connector.send_ACKNOWLEDGE_RSPNS(command)
+        return True
 
     def _handle_MEASURED_NO_RQST(self, command_data):
         measure_size = self.measure_queue.size()
@@ -196,7 +201,7 @@ class ListenerThread:
         self.listener.stop_loop()
 
     def join(self):
-        self.lock.acquire()     # wait for release og lock
+        self.lock.acquire()     # wait for release of lock
 
     def result(self):
         return self.listener.result
@@ -204,7 +209,14 @@ class ListenerThread:
     def _run(self):
         try:
             self.listener.listen()
+
+        except BaseException as exc:  # pylint: disable=W0703
+            self.listener.logger.error("stopping thread loop - received general exception:")
+            self.listener.logger.error(f"exception: {exc}")
+            self.listener.logger.exception(exc)
+
         finally:
+            self.listener.logger.info("listening stopped")
             self.lock.release()
             _thread.exit()
 
@@ -219,6 +231,7 @@ def start(logger: FileLogger) -> bool:
         listener_thread.start_thread()
         listener_thread.join()
 
+        logger.info("listener thread stopped")
         return listener_thread.result()
 
     finally:

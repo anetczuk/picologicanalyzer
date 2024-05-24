@@ -58,8 +58,6 @@ class Connector:
         message = self.wait_message()
         self.connector.print_message(message)
 
-        # self.connector.send_SET_PROBE_DELAY_US_RQST(500)
-
         self.connector.send_MEASURED_NO_RQST()
         message = self.wait_message_type( SensorMessage.MEASURED_NO_RSPNS )
         self.connector.print_message(message)

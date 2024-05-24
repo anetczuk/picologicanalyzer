@@ -26,6 +26,23 @@ class HostEndpoint(HostConnector):
     def receive_text(self):
         return self.channel.read_text()
 
+    # if 'new_state' is False then disable keyboard interrupts (allow value 0x03)
+    def set_keyboard_interrupt(self, new_state: bool):
+        if new_state:
+            print("enabling keyboard interrupt")
+            self.send_SET_KBD_INTR_RQST(1)
+        else:
+            print("disabling keyboard interrupt")
+            self.send_SET_KBD_INTR_RQST(0)
+        # wait for acknowledge
+        while True:
+            message = self.wait_message()
+            if message[0] != SensorMessage.ACKNOWLEDGE_RSPNS:
+                continue
+            if message[1] != HostMessage.SET_KBD_INTR_RQST:
+                continue
+            break
+
     def receive_measure_time(self):
         command = self.channel.read_byte()
         if command == SensorMessage.MEASURE_TIME_RSPNS:
@@ -70,11 +87,16 @@ class HostEndpoint(HostConnector):
             print(f"message: {message}")
             return
         command = message[0]
-        if command != SensorMessage.UNKNOWN_REQUEST_RSPNS:
-            message_name = SensorMessage.get_id_from_value(command)
-            print(f"message: {message_name} data: {message}")
-        else:
+        if command == SensorMessage.UNKNOWN_REQUEST_RSPNS:
             unknown_command = message[1]            
             message_name = SensorMessage.get_id_from_value(command)
             unknown_name = HostMessage.get_id_from_value(unknown_command)
             print(f"message: {message_name} data: {message} unknown command: {unknown_name}")
+        elif command == SensorMessage.ACKNOWLEDGE_RSPNS:
+            ack_command = message[1]            
+            message_name = SensorMessage.get_id_from_value(command)
+            ack_name = HostMessage.get_id_from_value(ack_command)
+            print(f"message: {message_name} data: {message} ack command: {ack_name}")
+        else:
+            message_name = SensorMessage.get_id_from_value(command)
+            print(f"message: {message_name} data: {message}")

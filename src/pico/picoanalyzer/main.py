@@ -49,6 +49,9 @@ def main():
 
             loop(logger)
 
+        except KeyboardInterrupt as exc:
+            logger.error("stopping main loop - received keyboard interrupt")
+
         except BaseException as exc:  # pylint: disable=W0703
             logger.error("stopping main loop - received general exception:")
             logger.error(f"exception: {exc}")
@@ -56,9 +59,9 @@ def main():
 
         finally:
             # signal before stop
-            for _ in range(0, 3):
-                utime.sleep(0.3)
-                board.blink_led(1.0)
+            for _ in range(0, 10):
+                utime.sleep(0.2)
+                board.blink_led(0.2)
 
             logger.info("script terminated")
 

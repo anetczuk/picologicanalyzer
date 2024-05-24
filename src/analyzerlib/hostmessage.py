@@ -16,17 +16,16 @@ class HostMessage:
     INTERNAL_TEMP_RQST = 0x08
     CHANNEL_STATE_RQST = 0x09
     SELECT_CHANNELS_RQST = 0x0a
-    SET_PROBE_DELAY_US_RQST = 0x0b
+    SET_MEASURE_BUFF_SIZE_RQST = 0x0b
     MEASURED_NO_RQST = 0x0c
     MEASURE_RQST = 0x0d
     MEASURE_TR_RQST = 0x0e
     MEASURE_TIME_RQST = 0x0f
     MEASURE_TIME_TR_RQST = 0x10
-    TRANSFER_TIME_RQST = 0x11
-    PROBE_TIME_RQST = 0x12
-    TEST_BYTES_RQST = 0x13
-    TEST_TEXT_RQST = 0x14
-    TEST_MEASURE_TIME_RQST = 0x15
+    TEST_TRANSFER_TIME_RQST = 0x11
+    TEST_MEASURE_TIME_RQST = 0x13
+    TEST_BYTES_RQST = 0x14
+    TEST_TEXT_RQST = 0x15
 
     @staticmethod
     def get_id_from_value(value) -> str:
@@ -49,7 +48,7 @@ class HostMessage:
         if value == 0x0a:
             return "SELECT_CHANNELS_RQST"
         if value == 0x0b:
-            return "SET_PROBE_DELAY_US_RQST"
+            return "SET_MEASURE_BUFF_SIZE_RQST"
         if value == 0x0c:
             return "MEASURED_NO_RQST"
         if value == 0x0d:
@@ -61,15 +60,13 @@ class HostMessage:
         if value == 0x10:
             return "MEASURE_TIME_TR_RQST"
         if value == 0x11:
-            return "TRANSFER_TIME_RQST"
-        if value == 0x12:
-            return "PROBE_TIME_RQST"
+            return "TEST_TRANSFER_TIME_RQST"
         if value == 0x13:
-            return "TEST_BYTES_RQST"
-        if value == 0x14:
-            return "TEST_TEXT_RQST"
-        if value == 0x15:
             return "TEST_MEASURE_TIME_RQST"
+        if value == 0x14:
+            return "TEST_BYTES_RQST"
+        if value == 0x15:
+            return "TEST_TEXT_RQST"
 
         # unhandled value
         return None

@@ -202,12 +202,12 @@ class HostConnector:
         self.channel.write_byte(0x0a)  # "SELECT_CHANNELS_RQST"
         self.channel.write_byte(channel_enable_flags)
 
-    ## send 'SET_PROBE_DELAY_US_RQST' message
+    ## send 'SET_MEASURE_BUFF_SIZE_RQST' message
     ## parameters:
-    ##    delay_us: int16
-    def send_SET_PROBE_DELAY_US_RQST(self, delay_us):
-        self.channel.write_byte(0x0b)  # "SET_PROBE_DELAY_US_RQST"
-        self.channel.write_int(delay_us, 2)
+    ##    buffer_size: int16
+    def send_SET_MEASURE_BUFF_SIZE_RQST(self, buffer_size):
+        self.channel.write_byte(0x0b)  # "SET_MEASURE_BUFF_SIZE_RQST"
+        self.channel.write_int(buffer_size, 2)
 
     ## send 'MEASURED_NO_RQST' message
     def send_MEASURED_NO_RQST(self):
@@ -247,19 +247,19 @@ class HostConnector:
         self.channel.write_byte(transfer_num)
         self.channel.write_byte(params_multiplier)
 
-    ## send 'TRANSFER_TIME_RQST' message
+    ## send 'TEST_TRANSFER_TIME_RQST' message
     ## parameters:
     ##    response_size: int16
-    def send_TRANSFER_TIME_RQST(self, response_size):
-        self.channel.write_byte(0x11)  # "TRANSFER_TIME_RQST"
+    def send_TEST_TRANSFER_TIME_RQST(self, response_size):
+        self.channel.write_byte(0x11)  # "TEST_TRANSFER_TIME_RQST"
         self.channel.write_int(response_size, 2)
 
-    ## send 'PROBE_TIME_RQST' message
+    ## send 'TEST_MEASURE_TIME_RQST' message
     ## parameters:
-    ##    probe_num: int16
-    def send_PROBE_TIME_RQST(self, probe_num):
-        self.channel.write_byte(0x12)  # "PROBE_TIME_RQST"
-        self.channel.write_int(probe_num, 2)
+    ##    measure_num: int16
+    def send_TEST_MEASURE_TIME_RQST(self, measure_num):
+        self.channel.write_byte(0x13)  # "TEST_MEASURE_TIME_RQST"
+        self.channel.write_int(measure_num, 2)
 
     ## send 'TEST_BYTES_RQST' message
     ## parameters:
@@ -267,7 +267,7 @@ class HostConnector:
     ##    transfer_num: int16
     ##    data_multiplier: int16
     def send_TEST_BYTES_RQST(self, data_bytes, transfer_num, data_multiplier):
-        self.channel.write_byte(0x13)  # "TEST_BYTES_RQST"
+        self.channel.write_byte(0x14)  # "TEST_BYTES_RQST"
         self.channel.write_int(len(data_bytes), 2)
         self.channel.write_bytes(data_bytes)
         self.channel.write_int(transfer_num, 2)
@@ -278,13 +278,6 @@ class HostConnector:
     ##    content: str
     ##    transfer_num: int16
     def send_TEST_TEXT_RQST(self, content, transfer_num):
-        self.channel.write_byte(0x14)  # "TEST_TEXT_RQST"
+        self.channel.write_byte(0x15)  # "TEST_TEXT_RQST"
         self.channel.write_text(content)
         self.channel.write_int(transfer_num, 2)
-
-    ## send 'TEST_MEASURE_TIME_RQST' message
-    ## parameters:
-    ##    measure_num: int16
-    def send_TEST_MEASURE_TIME_RQST(self, measure_num):
-        self.channel.write_byte(0x15)  # "TEST_MEASURE_TIME_RQST"
-        self.channel.write_int(measure_num, 2)

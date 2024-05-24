@@ -25,17 +25,16 @@ class SensorConnector:
                             0x08: self._handle_INTERNAL_TEMP_RQST,  # INTERNAL_TEMP_RQST
                             0x09: self._handle_CHANNEL_STATE_RQST,  # CHANNEL_STATE_RQST
                             0x0a: self._handle_SELECT_CHANNELS_RQST,  # SELECT_CHANNELS_RQST
-                            0x0b: self._handle_SET_PROBE_DELAY_US_RQST,  # SET_PROBE_DELAY_US_RQST
+                            0x0b: self._handle_SET_MEASURE_BUFF_SIZE_RQST,  # SET_MEASURE_BUFF_SIZE_RQST
                             0x0c: self._handle_MEASURED_NO_RQST,  # MEASURED_NO_RQST
                             0x0d: self._handle_MEASURE_RQST,  # MEASURE_RQST
                             0x0e: self._handle_MEASURE_TR_RQST,  # MEASURE_TR_RQST
                             0x0f: self._handle_MEASURE_TIME_RQST,  # MEASURE_TIME_RQST
                             0x10: self._handle_MEASURE_TIME_TR_RQST,  # MEASURE_TIME_TR_RQST
-                            0x11: self._handle_TRANSFER_TIME_RQST,  # TRANSFER_TIME_RQST
-                            0x12: self._handle_PROBE_TIME_RQST,  # PROBE_TIME_RQST
-                            0x13: self._handle_TEST_BYTES_RQST,  # TEST_BYTES_RQST
-                            0x14: self._handle_TEST_TEXT_RQST,  # TEST_TEXT_RQST
-                            0x15: self._handle_TEST_MEASURE_TIME_RQST,  # TEST_MEASURE_TIME_RQST
+                            0x11: self._handle_TEST_TRANSFER_TIME_RQST,  # TEST_TRANSFER_TIME_RQST
+                            0x13: self._handle_TEST_MEASURE_TIME_RQST,  # TEST_MEASURE_TIME_RQST
+                            0x14: self._handle_TEST_BYTES_RQST,  # TEST_BYTES_RQST
+                            0x15: self._handle_TEST_TEXT_RQST,  # TEST_TEXT_RQST
                             }
 
     def wait_message(self):
@@ -127,12 +126,12 @@ class SensorConnector:
         channel_enable_flags = self.channel.read_byte()
         return [0x0a, channel_enable_flags]
 
-    # SET_PROBE_DELAY_US_RQST
+    # SET_MEASURE_BUFF_SIZE_RQST
     ## parameters:
-    ##    delay_us: int16
-    def _handle_SET_PROBE_DELAY_US_RQST(self):
-        delay_us = self.channel.read_int(2)
-        return [0x0b, delay_us]
+    ##    buffer_size: int16
+    def _handle_SET_MEASURE_BUFF_SIZE_RQST(self):
+        buffer_size = self.channel.read_int(2)
+        return [0x0b, buffer_size]
 
     # MEASURED_NO_RQST
     def _handle_MEASURED_NO_RQST(self):
@@ -173,19 +172,19 @@ class SensorConnector:
         params_multiplier = self.channel.read_byte()
         return [0x10, measure_num, transfer_num, params_multiplier]
 
-    # TRANSFER_TIME_RQST
+    # TEST_TRANSFER_TIME_RQST
     ## parameters:
     ##    response_size: int16
-    def _handle_TRANSFER_TIME_RQST(self):
+    def _handle_TEST_TRANSFER_TIME_RQST(self):
         response_size = self.channel.read_int(2)
         return [0x11, response_size]
 
-    # PROBE_TIME_RQST
+    # TEST_MEASURE_TIME_RQST
     ## parameters:
-    ##    probe_num: int16
-    def _handle_PROBE_TIME_RQST(self):
-        probe_num = self.channel.read_int(2)
-        return [0x12, probe_num]
+    ##    measure_num: int16
+    def _handle_TEST_MEASURE_TIME_RQST(self):
+        measure_num = self.channel.read_int(2)
+        return [0x13, measure_num]
 
     # TEST_BYTES_RQST
     ## parameters:
@@ -197,7 +196,7 @@ class SensorConnector:
         data_bytes = self.channel.read_bytes(data_size)
         transfer_num = self.channel.read_int(2)
         data_multiplier = self.channel.read_int(2)
-        return [0x13, data_bytes, transfer_num, data_multiplier]
+        return [0x14, data_bytes, transfer_num, data_multiplier]
 
     # TEST_TEXT_RQST
     ## parameters:
@@ -206,14 +205,7 @@ class SensorConnector:
     def _handle_TEST_TEXT_RQST(self):
         content = self.channel.read_text()
         transfer_num = self.channel.read_int(2)
-        return [0x14, content, transfer_num]
-
-    # TEST_MEASURE_TIME_RQST
-    ## parameters:
-    ##    measure_num: int16
-    def _handle_TEST_MEASURE_TIME_RQST(self):
-        measure_num = self.channel.read_int(2)
-        return [0x15, measure_num]
+        return [0x15, content, transfer_num]
 
     ## ============= send methods ===============
 
@@ -288,12 +280,6 @@ class SensorConnector:
         self.channel.write_byte(0x0b)  # "MEASURE_TIME_RSPNS"
         self.channel.write_int(len(measure_bytes), 2)
         self.channel.write_bytes(measure_bytes)
-
-        # data = bytearray()
-        # data.append(0x0b)
-        # data.extend( len(measure_bytes).to_bytes(2, "big") )
-        # data.extend( measure_bytes )
-        # self.channel.write_bytes(data)
 
     ## send 'TEST_BYTES_RSPNS' message
     ## parameters:

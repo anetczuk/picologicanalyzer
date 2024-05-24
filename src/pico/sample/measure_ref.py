@@ -92,7 +92,6 @@ lookup_dict = {
     HostMessage.MEASURE_RQST: measure,
     HostMessage.MEASURE_TR_RQST: measure_tr,
     HostMessage.MEASURE_TIME_RQST: measure_time,
-    HostMessage.PROBE_TIME_RQST: probe_time,
 }
 
 
