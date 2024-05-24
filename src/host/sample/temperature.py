@@ -7,6 +7,10 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+#
+# Read Pico internal temperature.
+#
+
 try:
     ## following import success only when file is directly executed from command line
     ## otherwise will throw exception when executing as parameter for "python -m"
@@ -22,25 +26,26 @@ import time
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
+from analyzerlib.sensormessage import SensorMessage
+from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
-from hostanalyzer.printlogger import PrintLogger
 
 
-def test_byte(connector: HostEndpoint):
-    for i in range(0, 256):
-        # if i == 0x03:
-        #     # forbidden value - triggers keyboard interrupt
-        #     continue
+def perform_test(connector: HostEndpoint):
+    print("starting")
 
-        data = bytes([i])
-        connector.send_TEST_BYTES_RQST(data, 1)
-        response = connector.receive_message()
-        print(f"data: {data!r} response: {response}")
-        received_data = int.from_bytes(response[1], "big")
-        if received_data != i:
-            print("invalid response")
-            raise RuntimeError("invalid response")
-        time.sleep(0.01)
+    for _ in range(0, 5):
+        connector.send_INTERNAL_TEMP_RQST()
+        message = connector.wait_message()
+        command = message[0]
+        if command != SensorMessage.INTERNAL_TEMP_RSPNS:
+            print("invalid message:", message)
+            return
+
+        temperature = message[1] / 100.0
+        print("current Pico temperature:", temperature)
+
+        time.sleep(0.5)
 
     print("completed")
 
@@ -52,12 +57,21 @@ def main():
     with serial.Serial(
         port="/dev/ttyACM0", parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, timeout=1
     ) as medium:
-        logger = PrintLogger()
         medium.flush()
+        medium.reset_input_buffer()
         channel = SerialChannel(medium)
-        connector = HostEndpoint(channel, logger)
+        connector = HostEndpoint(channel)
 
-        test_byte(connector)
+        try:
+            connector.set_keyboard_interrupt(False)
+
+            perform_test(connector)
+
+        except KeyboardInterrupt:
+            raise
+
+        finally:
+            connector.set_keyboard_interrupt(True)
 
     return 0
 

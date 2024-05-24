@@ -7,6 +7,10 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+#
+# Check how many measurements are stored in Pico memory.
+#
+
 try:
     ## following import success only when file is directly executed from command line
     ## otherwise will throw exception when executing as parameter for "python -m"
@@ -22,31 +26,19 @@ import time
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
+from analyzerlib.sensormessage import SensorMessage
+from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
-from hostanalyzer.printlogger import PrintLogger
 
 
-def test_text_transfer(connector: HostEndpoint):
-    # there is maximum transfer 200k B/s
-    # tsize 128 seems to be optimal value
-    for tsize in (1, 64, 100, 128, 160, 255):
-        # for tsize in (1, 50, 100, 200, 400):
-        count = 0
-        transfers = 2000  # max 65535
-        connector.send_TEST_TEXT_RQST("a" * tsize, transfers)
-        start_time = time.time()
-        for _ in range(0, transfers):
-            response = connector.receive_message()
-            data = response[1]
-            if data is None:
-                continue
-            count += len(data)
-        transfer_time = time.time() - start_time
-        print(
-            f"size: {tsize}: transfer: {transfer_time} secs, iters: {transfers}"
-            f", iter: {transfer_time / transfers} secs"
-            f", chars: {count}, {count / transfer_time} chars/sec"
-        )
+def perform_test(connector: HostEndpoint):
+    print("starting")
+
+    for _ in range(0, 100):
+        connector.send_MEASURED_NO_RQST()
+        message = connector.wait_message_type( SensorMessage.MEASURED_NO_RSPNS )
+        connector.print_message(message)
+        time.sleep(0.1)
 
     print("completed")
 
@@ -58,12 +50,21 @@ def main():
     with serial.Serial(
         port="/dev/ttyACM0", parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, timeout=1
     ) as medium:
-        logger = PrintLogger()
         medium.flush()
+        medium.reset_input_buffer()
         channel = SerialChannel(medium)
-        connector = HostEndpoint(channel, logger)
+        connector = HostEndpoint(channel)
 
-        test_text_transfer(connector)
+        try:
+            connector.set_keyboard_interrupt(False)
+
+            perform_test(connector)
+
+        except KeyboardInterrupt:
+            raise
+
+        finally:
+            connector.set_keyboard_interrupt(True)
 
     return 0
 

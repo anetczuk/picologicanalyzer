@@ -7,6 +7,12 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+#
+# Check if every character can be transferred through USB.
+# Script fails in case of Keyboard Interrupt character (0x03).
+# To prevent failure Keyboard Interrupt signal have to be disabled.
+#
+
 try:
     ## following import success only when file is directly executed from command line
     ## otherwise will throw exception when executing as parameter for "python -m"
@@ -23,29 +29,21 @@ import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from hostanalyzer.serialchannel import SerialChannel
-from hostanalyzer.printlogger import PrintLogger
 
 
-def test_bytes_transfer(connector: HostEndpoint):
-    # there is maximum transfer 200k B/s
-    # tsize 128 seems to be optimal value
-    for tsize in (1, 64, 100, 128, 160, 255):
-        count = 0
-        transfers = 2000  # max 65535
-        connector.send_TEST_BYTES_RQST(b"\x01" * tsize, transfers)
-        start_time = time.time()
-        for _ in range(0, transfers):
-            response = connector.receive_message()
-            data = response[1]
-            if data is None:
-                continue
-            count += len(data)
-        transfer_time = time.time() - start_time
-        print(
-            f"size: {tsize}: transfer: {transfer_time} secs, iters: {transfers}"
-            f", iter: {transfer_time / transfers} secs"
-            f", bytes: {count}, {count / transfer_time} bytes/sec"
-        )
+def perform_test(connector: HostEndpoint):
+    print("starting")
+
+    for i in range(0, 256):
+        data = bytes([i])
+        connector.send_TEST_BYTES_RQST(data, 1, 1)
+        response = connector.wait_message()
+        print(f"data: {data!r} response: {response}")
+        received_data = int.from_bytes(response[1], "big")
+        if received_data != i:
+            print("invalid response")
+            raise RuntimeError("invalid response")
+        time.sleep(0.01)
 
     print("completed")
 
@@ -57,12 +55,21 @@ def main():
     with serial.Serial(
         port="/dev/ttyACM0", parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, timeout=1
     ) as medium:
-        logger = PrintLogger()
         medium.flush()
+        medium.reset_input_buffer()
         channel = SerialChannel(medium)
-        connector = HostEndpoint(channel, logger)
+        connector = HostEndpoint(channel)
 
-        test_bytes_transfer(connector)
+        try:
+            connector.set_keyboard_interrupt(False)
+
+            perform_test(connector)
+
+        except KeyboardInterrupt:
+            raise
+
+        finally:
+            connector.set_keyboard_interrupt(True)
 
     return 0
 

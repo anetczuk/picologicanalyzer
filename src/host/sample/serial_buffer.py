@@ -7,6 +7,10 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+#
+# Find buffer size of USB serial port.
+#
+
 try:
     ## following import success only when file is directly executed from command line
     ## otherwise will throw exception when executing as parameter for "python -m"
@@ -23,32 +27,28 @@ import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensormessage import SensorMessage
+from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
-from hostanalyzer.printlogger import PrintLogger
 
 
-def handle_message(connector: HostEndpoint):
-    message = connector.receive_message()
-    if message is None:
-        print("invalid message:", message)
-        return
+def perform_test(connector: HostEndpoint):
+    print("starting")
 
-    command = message[0]
-    if command == SensorMessage.SET_KBD_INTR_RSPNS:
-        print("keyboard interrupt acknowledge")
-        return
+    data_size = 0
+    while True:
+        data_size += 64
+        connector.send_TEST_BYTES_RQST(b'0', 1, data_size)
+        time.sleep(0.1)                     # wait for data to arrive into internal buffer
+        expected_message_size = 3 + data_size
+        data = connector.receive_bytes(expected_message_size)
+        received_size = len(data)
 
-    if command != SensorMessage.INTERNAL_TEMP_RSPNS:
-        print("invalid message:", message)
-        return
+        print(f"expected: {expected_message_size} received: {received_size}")
+        if expected_message_size != received_size:
+            print("hit buffer limit")
+            break
 
-    temperature = message[1]
-    if temperature is None:
-        print("invalid data:", message)
-        return
-
-    temperature = temperature / 100.0
-    print("current Pico temperature:", temperature)
+    print("completed")
 
 
 def main():
@@ -58,23 +58,21 @@ def main():
     with serial.Serial(
         port="/dev/ttyACM0", parity=serial.PARITY_EVEN, stopbits=serial.STOPBITS_ONE, timeout=1
     ) as medium:
-        logger = PrintLogger()
         medium.flush()
+        medium.reset_input_buffer()
         channel = SerialChannel(medium)
-        connector = HostEndpoint(channel, logger)
+        connector = HostEndpoint(channel)
 
-        # disable keyboard interrupts (allow value 0x03)
-        connector.send_SET_KBD_INTR_RQST(0)
-        handle_message(connector)
+        try:
+            connector.set_keyboard_interrupt(False)
 
-        for _ in range(0, 5):
-            connector.send_INTERNAL_TEMP_RQST()
-            handle_message(connector)
-            time.sleep(0.5)
+            perform_test(connector)
 
-        # enable keyboard interrupt
-        connector.send_SET_KBD_INTR_RQST(1)
-        handle_message(connector)
+        except KeyboardInterrupt:
+            raise
+
+        finally:
+            connector.set_keyboard_interrupt(True)
 
     return 0
 
