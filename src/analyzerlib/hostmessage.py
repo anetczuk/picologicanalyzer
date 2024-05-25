@@ -23,9 +23,9 @@ class HostMessage:
     MEASURE_TIME_RQST = 0x0F
     MEASURE_TIME_TR_RQST = 0x10
     TEST_TRANSFER_TIME_RQST = 0x11
-    TEST_MEASURE_TIME_RQST = 0x13
-    TEST_BYTES_RQST = 0x14
-    TEST_TEXT_RQST = 0x15
+    TEST_MEASURE_TIME_RQST = 0x12
+    TEST_BYTES_RQST = 0x13
+    TEST_TEXT_RQST = 0x14
 
     @staticmethod
     def get_id_from_value(value) -> str:
@@ -61,11 +61,11 @@ class HostMessage:
             return "MEASURE_TIME_TR_RQST"
         if value == 0x11:
             return "TEST_TRANSFER_TIME_RQST"
-        if value == 0x13:
+        if value == 0x12:
             return "TEST_MEASURE_TIME_RQST"
-        if value == 0x14:
+        if value == 0x13:
             return "TEST_BYTES_RQST"
-        if value == 0x15:
+        if value == 0x14:
             return "TEST_TEXT_RQST"
 
         # unhandled value

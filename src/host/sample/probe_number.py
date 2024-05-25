@@ -34,7 +34,7 @@ def perform_test(connector: HostEndpoint):
     print("starting")
 
     for _ in range(0, 100):
-        connector.send_MEASURED_NO_RQST()
+        connector.send_measured_no_rqst()
         message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
         connector.print_message(message)
         time.sleep(0.1)

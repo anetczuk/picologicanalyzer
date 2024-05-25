@@ -34,7 +34,7 @@ def perform_test(connector: HostEndpoint):
     print("starting")
 
     for _ in range(0, 5):
-        connector.send_INTERNAL_TEMP_RQST()
+        connector.send_internal_temp_rqst()
         message = connector.wait_message()
         command = message[0]
         if command != SensorMessage.INTERNAL_TEMP_RSPNS:

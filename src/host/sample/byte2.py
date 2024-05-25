@@ -35,7 +35,7 @@ def perform_test(connector: HostEndpoint):
 
     for i in range(0, 65536):
         data = i.to_bytes(2, "big")
-        connector.send_TEST_BYTES_RQST(data, 1, 1)
+        connector.send_test_bytes_rqst(data, 1, 1)
         response = connector.wait_message()
         if response[0] is None:
             print("invalid response", response)

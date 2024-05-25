@@ -36,7 +36,7 @@ def perform_test(connector: HostEndpoint):
 
     for i in range(0, 256):
         data = bytes([i])
-        connector.send_TEST_BYTES_RQST(data, 1, 1)
+        connector.send_test_bytes_rqst(data, 1, 1)
         response = connector.wait_message()
         print(f"data: {data!r} response: {response}")
         received_data = int.from_bytes(response[1], "big")

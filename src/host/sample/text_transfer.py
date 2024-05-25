@@ -38,7 +38,7 @@ def perform_test(connector: HostEndpoint):
         # for tsize in (1, 50, 100, 200, 400):
         count = 0
         transfers = 2000  # max 65535
-        connector.send_TEST_TEXT_RQST("a" * tsize, transfers)
+        connector.send_test_text_rqst("a" * tsize, transfers)
         start_time = time.time()
         for _ in range(0, transfers):
             response = connector.receive_message()

@@ -34,7 +34,7 @@ def main():
 
     iters = 100000
     for _ in range(0, iters):
-        host.send_TEST_BYTES_RQST(b"\x01", 1, 1)
+        host.send_test_bytes_rqst(b"\x01", 1, 1)
         sensor.receive_message()
 
     end_time = datetime.datetime.now()

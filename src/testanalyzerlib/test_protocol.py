@@ -32,14 +32,14 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_MEASURE_TR_RQST(4, 2)
+        host.send_measure_tr_rqst(4, 2)
 
         # receive request
         command = sensor.receive_message()
         self.assertEqual(command, [HostMessage.MEASURE_TR_RQST, 4, 2])
 
-        sensor.send_MEASURE_RSPNS([1, 2, 3, 4])
-        sensor.send_MEASURE_RSPNS([5, 6, 7, 8])
+        sensor.send_measure_rspns([1, 2, 3, 4])
+        sensor.send_measure_rspns([5, 6, 7, 8])
 
         # receive response
         response = host.receive_message()
@@ -53,13 +53,13 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_INTERNAL_TEMP_RQST()
+        host.send_internal_temp_rqst()
 
         # receive request
         command = sensor.receive_message()
         self.assertEqual(command, [HostMessage.INTERNAL_TEMP_RQST])
 
-        sensor.send_INTERNAL_TEMP_RSPNS(2610)
+        sensor.send_internal_temp_rspns(2610)
 
         # receive response
         response = host.receive_message()
@@ -71,13 +71,13 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_CHANNEL_STATE_RQST()
+        host.send_channel_state_rqst()
 
         # receive request
         command = sensor.receive_message()
         self.assertEqual(command, [HostMessage.CHANNEL_STATE_RQST])
 
-        sensor.send_CHANNEL_STATE_RSPNS(0x03)
+        sensor.send_channel_state_rspns(0x03)
 
         # receive response
         response = host.receive_message()
@@ -89,13 +89,13 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_TEST_BYTES_RQST(b"\x01\x02\x03", 1, 1)
+        host.send_test_bytes_rqst(b"\x01\x02\x03", 1, 1)
 
         # receive request
         command = sensor.receive_message()
         self.assertEqual(command, [HostMessage.TEST_BYTES_RQST, b"\x01\x02\x03", 1, 1])
 
-        sensor.send_TEST_BYTES_RSPNS(b"\x01\x02\x03")
+        sensor.send_test_bytes_rspns(b"\x01\x02\x03")
 
         # receive response
         response = host.receive_message()
@@ -107,13 +107,13 @@ class ProtocolTest(unittest.TestCase):
         sensor = SensorEndpoint(channel)
 
         # send request
-        host.send_TEST_TEXT_RQST("abcd", 1)
+        host.send_test_text_rqst("abcd", 1)
 
         # receive request
         command = sensor.receive_message()
         self.assertEqual(command, [HostMessage.TEST_TEXT_RQST, "abcd", 1])
 
-        sensor.send_TEST_TEXT_RSPNS("abcd")
+        sensor.send_test_text_rspns("abcd")
 
         # receive response
         response = host.receive_message()

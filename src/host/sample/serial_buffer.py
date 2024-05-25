@@ -35,7 +35,7 @@ def perform_test(connector: HostEndpoint):
     data_size = 0
     while True:
         data_size += 64
-        connector.send_TEST_BYTES_RQST(b"0", 1, data_size)
+        connector.send_test_bytes_rqst(b"0", 1, data_size)
         time.sleep(0.1)  # wait for data to arrive into internal buffer
         expected_message_size = 3 + data_size
         data = connector.receive_bytes(expected_message_size)

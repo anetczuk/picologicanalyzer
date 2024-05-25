@@ -37,13 +37,13 @@ def keyboard_interrupt(connector, command_data):
         # enable keyboard interrupt (allow connecting to REPL console various tools)
         micropython.kbd_intr(3)
     utime.sleep(0.1)
-    connector.send_ACKNOWLEDGE_RSPNS(HostMessage.SET_KBD_INTR_RQST)
+    connector.send_acknowledge_rspns(HostMessage.SET_KBD_INTR_RQST)
 
 
 def current_time_us(connector, _):
     # def current_time_us(connector, command_data):
     time_value = time.ticks_us()  # pylint: disable=E1101
-    connector.send_CURRENT_TIME_US_RSPNS(time_value)
+    connector.send_current_time_us_rspns(time_value)
 
 
 def measure(connector, command_data):
@@ -62,7 +62,7 @@ def send_measures(connector, measure_num):
     values = bytearray([0] * measure_num)
     for m in range(0, measure_num):
         values[m] = probe.value()  # type: int
-    connector.send_MEASURE_RSPNS(values)
+    connector.send_measure_rspns(values)
 
 
 def measure_time(connector, command_data):
@@ -74,7 +74,7 @@ def measure_time(connector, command_data):
         curr_state = probe.value()  # type: int
         measurements_list[m] = (curr_time, curr_state)
     measures_data = measuretimemsg.data_to_bytearray(measurements_list)
-    connector.send_MEASURE_TIME_RSPNS(measures_data)
+    connector.send_measure_time_rspns(measures_data)
 
 
 def probe_time(connector, command_data):
@@ -85,7 +85,7 @@ def probe_time(connector, command_data):
     end_time = time.ticks_us()  # pylint: disable=E1101
     diff_time = end_time - start_time
 
-    connector.send_CURRENT_TIME_US_RSPNS(diff_time)
+    connector.send_current_time_us_rspns(diff_time)
 
 
 lookup_dict = {
@@ -124,12 +124,11 @@ def handle(connector, logger) -> bool:
         logger.warn(f"unhandled command: {command_data}")
 
     board.blink_led(0.01)
-    connector.send_UNKNOWN_REQUEST_RSPNS(command)
+    connector.send_unknown_request_rspns(command)
     return True
 
 
 def start(logger: FileLogger) -> bool:
-    logger: FileLogger = logger
     channel = SysStreamChannel()
     connector = SensorEndpoint(channel)
 

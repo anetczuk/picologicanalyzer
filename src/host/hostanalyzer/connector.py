@@ -44,20 +44,20 @@ class Connector:
         # disable keyboard interrupts (allow value 0x03)
         self.logger.info("starting runner")
         self.logger.info("disabling Pico keyboard interrupt")
-        self.connector.send_SET_KBD_INTR_RQST(0)
+        self.connector.send_set_kbd_intr_rqst(0)
         self.handle_message()
 
-        self.connector.send_INTERNAL_TEMP_RQST()
+        self.connector.send_internal_temp_rqst()
         message = self.wait_message()
         self.connector.print_message(message)
 
-        # self.connector.send_SET_INTERNAL_LED_RQST(1)
+        # self.connector.send_set_internal_led_rqst(1)
 
-        self.connector.send_SELECT_CHANNELS_RQST(0x01)
+        self.connector.send_select_channels_rqst(0x01)
         message = self.wait_message()
         self.connector.print_message(message)
 
-        self.connector.send_MEASURED_NO_RQST()
+        self.connector.send_measured_no_rqst()
         message = self.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
         self.connector.print_message(message)
 
@@ -81,7 +81,7 @@ class Connector:
                     f"received: {received_measurements} single measure time: {transfer_time * 1000} ms freq: {freq} Hz"
                 )
 
-                # self.connector.send_MEASURED_NO_RQST()
+                # self.connector.send_measured_no_rqst()
                 # message = self.wait_message_type( SensorMessage.MEASURED_NO_RSPNS )
                 # self.connector.print_message(message)
 
@@ -99,9 +99,9 @@ class Connector:
             self.enable_keyb_interrupt()
 
     def request_measure(self, measurements, transfer_num):
-        self.connector.send_MEASURE_TR_RQST(measurements, transfer_num)
+        self.connector.send_measure_tr_rqst(measurements, transfer_num)
         for _ in range(0, transfer_num):
-            # self.connector.send_MEASURE_RQST(measurements)
+            # self.connector.send_measure_rqst(measurements)
             message = self.handle_message()
 
             if message is not None and message[0] == SensorMessage.MEASURE_RSPNS:
@@ -115,8 +115,8 @@ class Connector:
         # for _ in range(0, transfer_num):
         received_measurements = 0
         while transfer_num > 0:
-            self.connector.send_MEASURE_TIME_RQST(measurements)
-            # self.connector.send_TEST_BYTES_RQST(b"\x01", 1, measurements)
+            self.connector.send_measure_time_rqst(measurements)
+            # self.connector.send_test_bytes_rqst(b"\x01", 1, measurements)
 
             # message = self.handle_message()
             message = self.connector.receive_message()
@@ -159,12 +159,12 @@ class Connector:
         measuremest_multiplied = measurements * multiplier
         transfers_multiplied = transfer_num * multiplier
 
-        self.connector.send_MEASURE_TIME_TR_RQST(measurements, transfer_num, multiplier)
+        self.connector.send_measure_time_tr_rqst(measurements, transfer_num, multiplier)
 
         while transfers_multiplied > 0:
             transfers_multiplied -= 1
 
-            # self.connector.send_TEST_BYTES_RQST(b"\x01", 1, measurements)
+            # self.connector.send_test_bytes_rqst(b"\x01", 1, measurements)
 
             message = self.connector.receive_message()
             # message = self.handle_message()
@@ -213,7 +213,7 @@ class Connector:
         # enable keyboard interrupt
         self.logger.info("enabling Pico keyboard interrupt")
         # self.handle_message()
-        self.connector.send_SET_KBD_INTR_RQST(1)
+        self.connector.send_set_kbd_intr_rqst(1)
         while True:
             message = self.handle_message()
             if message is None:
@@ -226,7 +226,7 @@ class Connector:
                     break
 
     def read_pico_temperature(self):
-        self.connector.send_INTERNAL_TEMP_RQST()
+        self.connector.send_internal_temp_rqst()
         message = self.connector.receive_message()
         temperature = message[1]
         if temperature is None:

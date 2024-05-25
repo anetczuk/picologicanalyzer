@@ -41,10 +41,10 @@ def perform_test(connector: HostEndpoint):
     measurements = 200
     print("iters num:", iters, "measurements per iter:", measurements)
 
-    time_counter = Counter([])
+    time_counter: Counter = Counter([])
     last_measure_time = None
 
-    value_change_counter = Counter([])
+    value_change_counter: Counter = Counter([])
     prev_value = None
     curr_value_count = 0
 
@@ -52,7 +52,7 @@ def perform_test(connector: HostEndpoint):
 
     prev_iter_time = time.time()
     for _ in range(0, iters):
-        connector.send_MEASURE_TIME_RQST(measurements)
+        connector.send_measure_time_rqst(measurements)
         start_time = time.time()
         message = wait_message(connector)
         transfer_time = time.time() - start_time

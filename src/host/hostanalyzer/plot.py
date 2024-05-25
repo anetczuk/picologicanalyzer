@@ -10,6 +10,7 @@ import abc
 import signal
 from queue import Queue
 import traceback
+from typing import List
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
@@ -51,8 +52,8 @@ class AnimatedPlot:
         self.fig.canvas.mpl_connect("key_press_event", self.handle_close)
 
         self.ax = self.fig.add_subplot(1, 1, 1)
-        self.xs = []
-        self.ys = []
+        self.xs: List[int] = []
+        self.ys: List[int] = []
 
         # Set up plot to call animate() function periodically
         self.ani = FuncAnimation(self.fig, self._draw, interval=interval)

@@ -41,7 +41,7 @@ class Producer:
         counter = -1
         while self.running:
             counter += 1
-            value = randrange(0, 2)
+            value = randrange(0, 2)  # nosec
             # value = randrange(0, 100)
             # print("adding value:", value)
             self.data_queue.put_nowait([(counter, value)])

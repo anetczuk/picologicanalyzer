@@ -41,7 +41,7 @@ def perform_test(connector: HostEndpoint):
         transfers = int(data_transfer_limit / data_size)
         transfers = max(transfers, 1)
 
-        connector.send_TEST_BYTES_RQST(b"\x01", transfers, data_size)
+        connector.send_test_bytes_rqst(b"\x01", transfers, data_size)
 
         start_time = time.time()
         for _ in range(0, transfers):

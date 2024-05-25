@@ -31,7 +31,7 @@ from hostanalyzer.serialchannel import SerialChannel
 def measure_avg(connector: HostEndpoint, response_size, avg_size):
     time_sum = 0
     for _ in range(0, avg_size):
-        connector.send_TEST_TRANSFER_TIME_RQST(response_size)
+        connector.send_test_transfer_time_rqst(response_size)
 
         connector.wait_message()  # test bytes - ignore
 

@@ -140,7 +140,7 @@ class MeasureListener(Listener):
         # self._scheduled_callback_ref = self._scheduled_callback
         self.irq_counter = 0
 
-    def _handle_SET_MEASURE_BUFF_SIZE_RQST(self, command_data):
+    def _handle_set_measure_buff_size_rqst(self, command_data):
         command = command_data[0]
         buffer_size = command_data[1]
 
@@ -148,13 +148,13 @@ class MeasureListener(Listener):
         self.measure_queue.set_capacity(buffer_size)
         self.start_probe()  # end of critical section
 
-        self.connector.send_ACKNOWLEDGE_RSPNS(command)
+        self.connector.send_acknowledge_rspns(command)
         return True
 
-    def _handle_MEASURED_NO_RQST(self, _):
-        # def _handle_MEASURED_NO_RQST(self, command_data):
+    def _handle_measured_no_rqst(self, _):
+        # def _handle_measured_no_rqst(self, command_data):
         measure_size = self.measure_queue.size()
-        self.connector.send_MEASURED_NO_RSPNS(measure_size)
+        self.connector.send_measured_no_rspns(measure_size)
         return True
 
     def start_probe(self):

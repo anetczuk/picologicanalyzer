@@ -38,7 +38,7 @@ def perform_test(connector: HostEndpoint):
     for measures_num in range(8, 512 + 1, 8):
         transfers = int(data_transfer_limit / (measures_num * 4))  # each measurement takes 4 bytes
         transfers = max(transfers, 1)
-        connector.send_MEASURED_NO_RQST()
+        connector.send_measured_no_rqst()
         message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
 
         expected_measures_num = measures_num * transfers
@@ -49,7 +49,7 @@ def perform_test(connector: HostEndpoint):
         diff_list = [0] * (timestamps_num - 1)
         for _ in range(0, transfers):
 
-            connector.send_TEST_MEASURE_TIME_RQST(measures_num)
+            connector.send_test_measure_time_rqst(measures_num)
             connector.receive_message()  # receive measurements itself
 
             timestamp_list = []

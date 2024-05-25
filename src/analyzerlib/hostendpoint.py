@@ -30,10 +30,10 @@ class HostEndpoint(HostConnector):
     def set_keyboard_interrupt(self, new_state: bool):
         if new_state:
             print("enabling keyboard interrupt")
-            self.send_SET_KBD_INTR_RQST(1)
+            self.send_set_kbd_intr_rqst(1)
         else:
             print("disabling keyboard interrupt")
-            self.send_SET_KBD_INTR_RQST(0)
+            self.send_set_kbd_intr_rqst(0)
         # wait for acknowledge
         while True:
             message = self.wait_message()
@@ -73,7 +73,7 @@ class HostEndpoint(HostConnector):
             print("sending test message")
             rand_num = randrange(256)  # nosec
             rand_byte = bytes([rand_num])
-            self.send_TEST_BYTES_RQST(rand_byte, 1, 1)
+            self.send_test_bytes_rqst(rand_byte, 1, 1)
             received = self.receive_message()
             print("xxxx:", rand_byte, received)
             if received[0] != SensorMessage.TEST_BYTES_RSPNS:

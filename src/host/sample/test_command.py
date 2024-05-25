@@ -33,32 +33,32 @@ from hostanalyzer.serialchannel import SerialChannel
 def perform_test(connector: HostEndpoint):
     print("starting")
 
-    connector.send_SET_KBD_INTR_RQST(0)
+    connector.send_set_kbd_intr_rqst(0)
     message = connector.wait_message()
     connector.print_message(message)
 
-    connector.send_INTERNAL_TEMP_RQST()
+    connector.send_internal_temp_rqst()
     message = connector.wait_message()
     connector.print_message(message)
 
-    connector.send_SELECT_CHANNELS_RQST(1)
+    connector.send_select_channels_rqst(1)
     message = connector.wait_message()
     connector.print_message(message)
 
-    connector.send_MEASURED_NO_RQST()
+    connector.send_measured_no_rqst()
     message = connector.wait_message()
     connector.print_message(message)
 
-    connector.send_MEASURE_RQST(10)
+    connector.send_measure_rqst(10)
     message = connector.wait_message()
     connector.print_message(message)
 
-    connector.send_MEASURE_TR_RQST(10, 2)
+    connector.send_measure_tr_rqst(10, 2)
     for _ in range(0, 2):
         message = connector.wait_message()
         connector.print_message(message)
 
-    connector.send_MEASURE_TIME_RQST(10)
+    connector.send_measure_time_rqst(10)
     message = connector.wait_message()
     connector.print_message(message)
 

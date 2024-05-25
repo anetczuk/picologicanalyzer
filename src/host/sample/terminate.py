@@ -45,7 +45,7 @@ def main():
         # disable keyboard interrupts (allow value 0x03)
         connector.set_keyboard_interrupt(0)
 
-        connector.send_INTERNAL_TEMP_RQST()
+        connector.send_internal_temp_rqst()
         message = connector.wait_message_type(SensorMessage.INTERNAL_TEMP_RSPNS)
         temperature = message[1] / 100.0
         print("current Pico temperature:", temperature)
@@ -55,7 +55,7 @@ def main():
         connector.set_keyboard_interrupt(1)
 
         print("sending terminate signal")
-        connector.send_TERMINATE_RQST()
+        connector.send_terminate_rqst()
 
     return 0
 
