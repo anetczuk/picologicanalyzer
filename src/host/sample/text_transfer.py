@@ -8,7 +8,7 @@
 #
 
 #
-#Measure speed of transferring text.
+# Measure speed of transferring text.
 #
 
 try:
@@ -72,9 +72,6 @@ def main():
             connector.set_keyboard_interrupt(False)
 
             perform_test(connector)
-
-        except KeyboardInterrupt:
-            raise
 
         finally:
             connector.set_keyboard_interrupt(True)

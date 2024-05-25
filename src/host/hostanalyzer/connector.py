@@ -8,7 +8,6 @@
 #
 
 import time
-from queue import Queue
 
 from multiprocessing.connection import Connection
 
@@ -59,7 +58,7 @@ class Connector:
         self.connector.print_message(message)
 
         self.connector.send_MEASURED_NO_RQST()
-        message = self.wait_message_type( SensorMessage.MEASURED_NO_RSPNS )
+        message = self.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
         self.connector.print_message(message)
 
         try:
@@ -78,7 +77,9 @@ class Connector:
                 diff_time = time.time() - start_time
                 transfer_time = diff_time / received_measurements
                 freq = 1.0 / transfer_time
-                print(f"received: {received_measurements} single measure time: {transfer_time * 1000} ms freq: {freq} Hz")
+                print(
+                    f"received: {received_measurements} single measure time: {transfer_time * 1000} ms freq: {freq} Hz"
+                )
 
                 # self.connector.send_MEASURED_NO_RQST()
                 # message = self.wait_message_type( SensorMessage.MEASURED_NO_RSPNS )
@@ -111,7 +112,7 @@ class Connector:
                     self._send_data((self.data_counter, measure))
 
     def request_measure_time(self, measurements, transfer_num) -> int:
-        #for _ in range(0, transfer_num):
+        # for _ in range(0, transfer_num):
         received_measurements = 0
         while transfer_num > 0:
             self.connector.send_MEASURE_TIME_RQST(measurements)
@@ -123,7 +124,7 @@ class Connector:
             # self.connector.print_message(message)
 
             if message is None:
-                self.logger.info(f"invalid message - received None")
+                self.logger.info("invalid message - received None")
                 continue
 
             transfer_num -= 1
@@ -131,10 +132,10 @@ class Connector:
             if message[0] == SensorMessage.MEASURE_TIME_RSPNS:
                 measure_array = message[1]
                 measuretime_list = measuretimemsg.bytearray_to_data(measure_array)
-                
+
                 # TODO: uncomment
                 # self._send_data(measuretime_list)
-                
+
                 measures_size = len(measuretime_list)
                 # measures_size = int(len(measure_array) / 4)
 
@@ -152,7 +153,7 @@ class Connector:
         return received_measurements
 
     def request_measure_time_tr(self, measurements, transfer_num, multiplier) -> int:
-        #for _ in range(0, transfer_num):
+        # for _ in range(0, transfer_num):
         received_measurements = 0
 
         measuremest_multiplied = measurements * multiplier
@@ -173,9 +174,9 @@ class Connector:
             if message[0] == SensorMessage.MEASURE_TIME_RSPNS:
                 measure_array = message[1]
                 measuretime_list = measuretimemsg.bytearray_to_data(measure_array)
-                
+
                 self._send_data(measuretime_list)
-                
+
                 measures_size = len(measuretime_list)
                 # measures_size = int(len(measure_array) / 4)
 
@@ -244,11 +245,11 @@ class Connector:
         # return self.connector.receive_message()
 
         command_data = self.connector.receive_message()
-        
+
         if command_data is None:
             # no incoming message
             return None
-        
+
         command = command_data[0]
 
         # this if-chain is slightly faster than overriding methods of HostEndpoint class
@@ -256,21 +257,21 @@ class Connector:
             # unknown command
             # logger.info(f"unknown command: {command_data}")
             return command_data
-        
-        elif command == SensorMessage.ACKNOWLEDGE_RSPNS:
+
+        if command == SensorMessage.ACKNOWLEDGE_RSPNS:
             ack_command = command_data[1]
             if ack_command == HostMessage.SET_KBD_INTR_RQST:
                 self.logger.info("keyboard interrupt acknowledge")
-        
+
         elif command == SensorMessage.UNKNOWN_REQUEST_RSPNS:
             message_value = command_data[1]
             message_id = HostMessage.get_id_from_value(message_value)
             self.logger.info(f"Pico does not know how to handle message '{message_value}'({message_id})")
-        
+
         elif command == SensorMessage.CHANNEL_STATE_RSPNS:
             channel_flags = command_data[1]
             self.logger.info(f"channels state: {channel_flags:>08b}")
-        
+
         # elif command == SensorMessage.MEASURED_NO_RSPNS:
         #     return command_data
         #
@@ -281,16 +282,16 @@ class Connector:
         # elif command == SensorMessage.MEASURE_TIME_RSPNS:
         #     # self.logger.info(f"received measurements: {command_data[1]}")
         #     return command_data
-        
+
         elif command == SensorMessage.INTERNAL_TEMP_RSPNS:
             temperature = command_data[1] / 100.0
             self.logger.info(f"Pico internal temperature: {temperature}")
-        
+
         # else:
         #     # unhandled command
         #     command_id = SensorMessage.get_id_from_value(command)
         #     self.logger.warn(f"unhandled command: {command_data}, '{command_id}'")
-        
+
         return command_data
 
     def handle_connection(self):
@@ -313,4 +314,4 @@ class Connector:
 class SerialConnector(Connector):
     def __init__(self, medium: serial.Serial, connection: Connection):
         channel: SerialChannel = SerialChannel(medium)
-        super().__init__(channel, connection)    
+        super().__init__(channel, connection)

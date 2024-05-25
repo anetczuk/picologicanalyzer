@@ -22,14 +22,12 @@ import datetime
 
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensorendpoint import SensorEndpoint
-from analyzerlib.hostmessage import HostMessage
-from analyzerlib.sensormessage import SensorMessage
 from analyzerlib.bytearraychannel import ByteArrayChannel
 
 
 def main():
     channel = ByteArrayChannel()
-    host = HostEndpoint(channel, None)
+    host = HostEndpoint(channel)
     sensor = SensorEndpoint(channel)
 
     start_time = datetime.datetime.now()

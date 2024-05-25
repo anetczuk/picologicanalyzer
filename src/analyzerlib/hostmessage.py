@@ -15,12 +15,12 @@ class HostMessage:
     CURRENT_TIME_CPU_RQST = 0x07
     INTERNAL_TEMP_RQST = 0x08
     CHANNEL_STATE_RQST = 0x09
-    SELECT_CHANNELS_RQST = 0x0a
-    SET_MEASURE_BUFF_SIZE_RQST = 0x0b
-    MEASURED_NO_RQST = 0x0c
-    MEASURE_RQST = 0x0d
-    MEASURE_TR_RQST = 0x0e
-    MEASURE_TIME_RQST = 0x0f
+    SELECT_CHANNELS_RQST = 0x0A
+    SET_MEASURE_BUFF_SIZE_RQST = 0x0B
+    MEASURED_NO_RQST = 0x0C
+    MEASURE_RQST = 0x0D
+    MEASURE_TR_RQST = 0x0E
+    MEASURE_TIME_RQST = 0x0F
     MEASURE_TIME_TR_RQST = 0x10
     TEST_TRANSFER_TIME_RQST = 0x11
     TEST_MEASURE_TIME_RQST = 0x13
@@ -45,17 +45,17 @@ class HostMessage:
             return "INTERNAL_TEMP_RQST"
         if value == 0x09:
             return "CHANNEL_STATE_RQST"
-        if value == 0x0a:
+        if value == 0x0A:
             return "SELECT_CHANNELS_RQST"
-        if value == 0x0b:
+        if value == 0x0B:
             return "SET_MEASURE_BUFF_SIZE_RQST"
-        if value == 0x0c:
+        if value == 0x0C:
             return "MEASURED_NO_RQST"
-        if value == 0x0d:
+        if value == 0x0D:
             return "MEASURE_RQST"
-        if value == 0x0e:
+        if value == 0x0E:
             return "MEASURE_TR_RQST"
-        if value == 0x0f:
+        if value == 0x0F:
             return "MEASURE_TIME_RQST"
         if value == 0x10:
             return "MEASURE_TIME_TR_RQST"

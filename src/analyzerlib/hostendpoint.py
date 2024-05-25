@@ -48,7 +48,7 @@ class HostEndpoint(HostConnector):
         if command == SensorMessage.MEASURE_TIME_RSPNS:
             data_size = self.channel.read_int(2)
             measure_bytes = self.channel.read_bytes(data_size)
-            return [0x0b, measure_bytes]
+            return [0x0B, measure_bytes]
 
         callback = self.lookup_dict.get(command)
         if callback is not None:
@@ -88,12 +88,12 @@ class HostEndpoint(HostConnector):
             return
         command = message[0]
         if command == SensorMessage.UNKNOWN_REQUEST_RSPNS:
-            unknown_command = message[1]            
+            unknown_command = message[1]
             message_name = SensorMessage.get_id_from_value(command)
             unknown_name = HostMessage.get_id_from_value(unknown_command)
             print(f"message: {message_name} data: {message} unknown command: {unknown_name}")
         elif command == SensorMessage.ACKNOWLEDGE_RSPNS:
-            ack_command = message[1]            
+            ack_command = message[1]
             message_name = SensorMessage.get_id_from_value(command)
             ack_name = HostMessage.get_id_from_value(ack_command)
             print(f"message: {message_name} data: {message} ack command: {ack_name}")

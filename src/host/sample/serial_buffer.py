@@ -26,8 +26,6 @@ import time
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
-from analyzerlib.sensormessage import SensorMessage
-from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
 
 
@@ -37,8 +35,8 @@ def perform_test(connector: HostEndpoint):
     data_size = 0
     while True:
         data_size += 64
-        connector.send_TEST_BYTES_RQST(b'0', 1, data_size)
-        time.sleep(0.1)                     # wait for data to arrive into internal buffer
+        connector.send_TEST_BYTES_RQST(b"0", 1, data_size)
+        time.sleep(0.1)  # wait for data to arrive into internal buffer
         expected_message_size = 3 + data_size
         data = connector.receive_bytes(expected_message_size)
         received_size = len(data)
@@ -67,9 +65,6 @@ def main():
             connector.set_keyboard_interrupt(False)
 
             perform_test(connector)
-
-        except KeyboardInterrupt:
-            raise
 
         finally:
             connector.set_keyboard_interrupt(True)

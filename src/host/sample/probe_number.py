@@ -27,7 +27,6 @@ import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensormessage import SensorMessage
-from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
 
 
@@ -36,7 +35,7 @@ def perform_test(connector: HostEndpoint):
 
     for _ in range(0, 100):
         connector.send_MEASURED_NO_RQST()
-        message = connector.wait_message_type( SensorMessage.MEASURED_NO_RSPNS )
+        message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
         connector.print_message(message)
         time.sleep(0.1)
 
@@ -59,9 +58,6 @@ def main():
             connector.set_keyboard_interrupt(False)
 
             perform_test(connector)
-
-        except KeyboardInterrupt:
-            raise
 
         finally:
             connector.set_keyboard_interrupt(True)

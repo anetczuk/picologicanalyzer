@@ -10,7 +10,7 @@
 # Checking how pin interrupts work.
 #
 
-import _thread
+# import _thread
 import time
 
 # import board
@@ -25,7 +25,8 @@ time.sleep(3.0)
 led = Pin(25, Pin.OUT)
 
 
-def tick(timer):
+def tick(_):
+    # def tick(timer):
     led.toggle()
 
 
@@ -52,7 +53,7 @@ buffer = TimeValueRingBuffer(1000)
 
 def pin_callback(pin):
     # global counter
-    curr_time = time.ticks_us()
+    curr_time = time.ticks_us()  # pylint: disable=E1101
     pin_val = pin.value()  # ~23us
     # buffer.put_fast(curr_time, pin_val)        # ~70us
 
@@ -61,8 +62,8 @@ def pin_callback(pin):
     buffer.value_data[index_put] = pin_val
     buffer.index_put = index_put
 
-    end_time = time.ticks_us()
-    diff = time.ticks_diff(end_time, curr_time)
+    end_time = time.ticks_us()  # pylint: disable=E1101
+    diff = time.ticks_diff(end_time, curr_time)  # pylint: disable=E1101
     print("irq duration:", diff, "us")
     # counter += 1
 
@@ -78,7 +79,7 @@ def run_loop():
 
     iteration = 0
 
-    last_time = time.ticks_us()
+    last_time = time.ticks_us()  # pylint: disable=E1101
     print("started", last_time, "us")
 
     # 10000 => 9793740 us
@@ -105,5 +106,5 @@ try:
 
     run_loop()
 
-except:  # noqa
+except:  # pylint: disable=W0702  # noqa
     print("exception!")

@@ -10,10 +10,10 @@
 # Checking lookup dict.
 #
 
-import micropython
-import machine
 import time
 import utime
+import micropython
+import machine
 
 import board
 from filelogger import FileLogger
@@ -40,8 +40,9 @@ def keyboard_interrupt(connector, command_data):
     connector.send_ACKNOWLEDGE_RSPNS(HostMessage.SET_KBD_INTR_RQST)
 
 
-def current_time_us(connector, command_data):
-    time_value = time.ticks_us()
+def current_time_us(connector, _):
+    # def current_time_us(connector, command_data):
+    time_value = time.ticks_us()  # pylint: disable=E1101
     connector.send_CURRENT_TIME_US_RSPNS(time_value)
 
 
@@ -68,6 +69,7 @@ def measure_time(connector, command_data):
     measure_num = command_data[1]
     measurements_list = [None] * measure_num
     for m in range(0, measure_num):
+        # pylint: disable=E1101
         curr_time = time.ticks_us()  # in microseconds (10^-6)
         curr_state = probe.value()  # type: int
         measurements_list[m] = (curr_time, curr_state)
@@ -77,10 +79,10 @@ def measure_time(connector, command_data):
 
 def probe_time(connector, command_data):
     probe_num = command_data[1]
-    start_time = time.ticks_us()
+    start_time = time.ticks_us()  # pylint: disable=E1101
     for _ in range(0, probe_num):
-        probe.value()  # type: int
-    end_time = time.ticks_us()
+        probe.value()
+    end_time = time.ticks_us()  # pylint: disable=E1101
     diff_time = end_time - start_time
 
     connector.send_CURRENT_TIME_US_RSPNS(diff_time)

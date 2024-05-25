@@ -6,41 +6,21 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-import sys
 import abc
 import signal
 from queue import Queue
 import traceback
 
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-
-
-# import math, numpy
-# x = numpy.linspace(0, 10, 10)
-# y = numpy.array([1 if math.floor(2 * t) % 2 == 0 else 0 for t in x])
-# print("xxx:", x)
-# print("xxx:", y)
-#
-# plt.plot(x,y)
-# plt.show()
-
-
-# import numpy as np
-# from scipy import signal
-# t = np.linspace(0, 1, 500, endpoint=False)
-# plt.plot(t, signal.square(2 * np.pi * 5 * t),'b')
-# plt.ylim(-2, 2)
-# plt.grid()
-# plt.show()
+from matplotlib.animation import FuncAnimation
 
 
 class DataStream(abc.ABC):
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def empty(self):
         raise NotImplementedError()
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get(self):
         raise NotImplementedError()
 
@@ -75,15 +55,15 @@ class AnimatedPlot:
         self.ys = []
 
         # Set up plot to call animate() function periodically
-        self.ani = animation.FuncAnimation(self.fig, self._draw, interval=interval)
+        self.ani = FuncAnimation(self.fig, self._draw, interval=interval)
         # self.ani = animation.FuncAnimation(self.fig, self._draw, fargs=(self.xs, self.ys), interval=200)
 
     # This function is called periodically from FuncAnimation
-    def _draw(self, i):
+    def _draw(self, i):  # pylint: disable=W0613
         try:
             # Draw x and y lists
             self.ax.clear()
-    
+
             # Add x and y to lists
             # 'self.data_stream' contains state changes, so to draw square signal plot
             # additional points (with previous value) have to be added
@@ -101,13 +81,13 @@ class AnimatedPlot:
                     prev_val = data_value
                     self.xs.append(data_time / 1000000)
                     self.ys.append(data_value)
-    
+
             # cut plot array
             self.xs = self.xs[-self.plot_items_number :]
             self.ys = self.ys[-self.plot_items_number :]
-    
+
             self.ax.plot(self.xs, self.ys)
-    
+
             # Format plot
             # plt.xticks(rotation=45, ha='right')
             # plt.xticks(ticks=[], rotation=45, ha='right')
@@ -134,5 +114,5 @@ class AnimatedPlot:
         # plt.close() # close the figure
         # exit() # exit the program, or raise KeyboardInterrupt for interrupt stack
 
-    def handle_interrupt(self, signum, frame):
+    def handle_interrupt(self, signum, frame):  # pylint: disable=W0613
         self.close()

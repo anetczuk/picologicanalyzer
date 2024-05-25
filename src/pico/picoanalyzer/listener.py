@@ -58,7 +58,7 @@ class DirectProbe(Probe):
     def time_value_list(self, measurements):
         ret_list = [None] * measurements
         for i in range(0, measurements):
-            curr_time = time.ticks_us()
+            curr_time = time.ticks_us()  # pylint: disable=E1101
             curr_state = self.probe_pin.value()  # type: int
             ret_list[i] = (curr_time, curr_state)
         return ret_list
@@ -183,17 +183,17 @@ class Listener:
         return True
 
     def _handle_CURRENT_TIME_MS_RQST(self, _):
-        time_value = time.ticks_ms()
+        time_value = time.ticks_ms()  # pylint: disable=E1101
         self.connector.send_CURRENT_TIME_MS_RSPNS(time_value)
         return True
 
     def _handle_CURRENT_TIME_US_RQST(self, _):
-        time_value = time.ticks_us()
+        time_value = time.ticks_us()  # pylint: disable=E1101
         self.connector.send_CURRENT_TIME_US_RSPNS(time_value)
         return True
 
     def _handle_CURRENT_TIME_CPU_RQST(self, _):
-        time_value = time.ticks_cpu()
+        time_value = time.ticks_cpu()  # pylint: disable=E1101
         self.connector.send_CURRENT_TIME_CPU_RSPNS(time_value)
         return True
 
@@ -249,13 +249,13 @@ class Listener:
 
     def _handle_MEASURE_TIME_TR_RQST(self, command_data):
         params_multiplier = command_data[3]
-        measures  = command_data[1] * params_multiplier
+        measures = command_data[1] * params_multiplier
         transfers = command_data[2] * params_multiplier
         # measures_data = bytearray(b'00000' * measures)
         # measurements_list = [(0,0)] * measures
 
         for _ in range(0, transfers):
-            measures_data = self.probe.time_value_bytearray(measures)   # faster ~1k Hz
+            measures_data = self.probe.time_value_bytearray(measures)  # faster ~1k Hz
             self.connector.send_MEASURE_TIME_RSPNS(measures_data)
 
             # measurements_list = self.probe.time_value_list(measures)
@@ -265,13 +265,13 @@ class Listener:
         return True
 
     def _handle_TEST_MEASURE_TIME_RQST(self, command_data):
-        time_value1 = time.ticks_us()
+        time_value1 = time.ticks_us()  # pylint: disable=E1101
         measurements_list = self.probe.time_value_list(command_data[1])
-        time_value2 = time.ticks_us()
+        time_value2 = time.ticks_us()  # pylint: disable=E1101
         measures_data = measuretimemsg.data_to_bytearray(measurements_list)
-        time_value3 = time.ticks_us()
+        time_value3 = time.ticks_us()  # pylint: disable=E1101
         self.connector.send_MEASURE_TIME_RSPNS(measures_data)
-        time_value4 = time.ticks_us()
+        time_value4 = time.ticks_us()  # pylint: disable=E1101
         self.connector.send_CURRENT_TIME_US_RSPNS(time_value1)
         self.connector.send_CURRENT_TIME_US_RSPNS(time_value2)
         self.connector.send_CURRENT_TIME_US_RSPNS(time_value3)
@@ -284,9 +284,9 @@ class Listener:
         if response_size > 0:
             response = bytearray([0] * response_size)
 
-        time_value1 = time.ticks_us()
+        time_value1 = time.ticks_us()  # pylint: disable=E1101
         self.connector.send_TEST_BYTES_RSPNS(response)
-        time_value2 = time.ticks_us()
+        time_value2 = time.ticks_us()  # pylint: disable=E1101
 
         self.connector.send_CURRENT_TIME_US_RSPNS(time_value1)
         self.connector.send_CURRENT_TIME_US_RSPNS(time_value2)

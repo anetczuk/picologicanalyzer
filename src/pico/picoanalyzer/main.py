@@ -49,7 +49,7 @@ def main():
 
             loop(logger)
 
-        except KeyboardInterrupt as exc:
+        except KeyboardInterrupt:
             logger.error("stopping main loop - received keyboard interrupt")
 
         except BaseException as exc:  # pylint: disable=W0703

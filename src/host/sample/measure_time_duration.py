@@ -22,12 +22,10 @@ except ImportError:
     pass
 
 import sys
-import time
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensormessage import SensorMessage
-from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
 
 
@@ -38,21 +36,21 @@ def perform_test(connector: HostEndpoint):
 
     # for measures_num in (10, 64, 100, 128, 160, 255, 500):
     for measures_num in range(8, 512 + 1, 8):
-        transfers = int(data_transfer_limit / (measures_num * 4))   # each measurement takes 4 bytes
+        transfers = int(data_transfer_limit / (measures_num * 4))  # each measurement takes 4 bytes
         transfers = max(transfers, 1)
         connector.send_MEASURED_NO_RQST()
-        message = connector.wait_message_type( SensorMessage.MEASURED_NO_RSPNS )
+        message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
 
         expected_measures_num = measures_num * transfers
         measures_in_queue = message[1]
         if expected_measures_num > measures_in_queue:
-            print("warning! not enough measures in Pico queue! Returned times might be harmed!") 
+            print("warning! not enough measures in Pico queue! Returned times might be harmed!")
 
         diff_list = [0] * (timestamps_num - 1)
         for _ in range(0, transfers):
 
             connector.send_TEST_MEASURE_TIME_RQST(measures_num)
-            connector.receive_message()                     # receive measurements itself
+            connector.receive_message()  # receive measurements itself
 
             timestamp_list = []
             for _ in range(0, timestamps_num):
@@ -64,17 +62,14 @@ def perform_test(connector: HostEndpoint):
                 timestamp_list.append(message[1])
 
             for i in range(1, timestamps_num):
-                diff_time = timestamp_list[i] - timestamp_list[i-1]
-                diff_list[i-1] += diff_time
+                diff_time = timestamp_list[i] - timestamp_list[i - 1]
+                diff_list[i - 1] += diff_time
 
         single_avg_list = [item / expected_measures_num for item in diff_list]
         single_avg_sum = sum(single_avg_list)
         single_avg_list.append(single_avg_sum)
 
-        print(
-            f"measures_num: {measures_num} iters: {transfers}"
-            f" single avg: {single_avg_list} us"
-        )
+        print(f"measures_num: {measures_num} iters: {transfers}" f" single avg: {single_avg_list} us")
 
     print("completed")
 
@@ -95,9 +90,6 @@ def main():
             connector.set_keyboard_interrupt(False)
 
             perform_test(connector)
-
-        except KeyboardInterrupt:
-            raise
 
         finally:
             connector.set_keyboard_interrupt(True)

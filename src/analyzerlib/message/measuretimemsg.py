@@ -41,7 +41,7 @@ def data_to_bytearray(measures_list):
     values = bytearray()
     for curr_item in measures_list:
         values.extend(curr_item[0].to_bytes(3, "big"))
-        values.append(curr_item[1])   
+        values.append(curr_item[1])
     return values
 
 

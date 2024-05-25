@@ -22,12 +22,9 @@ except ImportError:
     pass
 
 import sys
-import time
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
-from analyzerlib.sensormessage import SensorMessage
-from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
 
 
@@ -36,17 +33,17 @@ def measure_avg(connector: HostEndpoint, response_size, avg_size):
     for _ in range(0, avg_size):
         connector.send_TEST_TRANSFER_TIME_RQST(response_size)
 
-        connector.wait_message()                # test bytes - ignore
+        connector.wait_message()  # test bytes - ignore
 
         message1 = connector.wait_message()
         start_time_us = message1[1]
-    
+
         message2 = connector.wait_message()
         end_time_us = message2[1]
-    
+
         time_diff = (end_time_us - start_time_us) / 1000
         time_sum += time_diff
-        
+
     time_avg = time_sum / avg_size
     return time_avg
 
@@ -60,9 +57,7 @@ def perform_test(connector: HostEndpoint):
     while data_size < 1024:
         data_size += 32
         time_avg = measure_avg(connector, data_size, avg_size)
-        print(
-            f"message size: {data_size} time avg: {time_avg} ms time per byte: {time_avg/data_size} ms"
-        )
+        print(f"message size: {data_size} time avg: {time_avg} ms time per byte: {time_avg/data_size} ms")
     print("completed")
 
 
@@ -82,9 +77,6 @@ def main():
             connector.set_keyboard_interrupt(False)
 
             perform_test(connector)
-
-        except KeyboardInterrupt:
-            raise
 
         finally:
             connector.set_keyboard_interrupt(True)

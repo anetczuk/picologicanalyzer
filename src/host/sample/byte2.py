@@ -27,8 +27,6 @@ import sys
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
-from analyzerlib.hostmessage import HostMessage
-from analyzerlib.sensormessage import SensorMessage
 from hostanalyzer.serialchannel import SerialChannel
 
 
@@ -63,14 +61,11 @@ def main():
         medium.reset_input_buffer()
         channel = SerialChannel(medium)
         connector = HostEndpoint(channel)
-        
+
         try:
             connector.set_keyboard_interrupt(False)
 
             perform_test(connector)
-
-        except KeyboardInterrupt:
-            raise
 
         finally:
             connector.set_keyboard_interrupt(True)

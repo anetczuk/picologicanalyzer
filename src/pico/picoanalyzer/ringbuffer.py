@@ -87,7 +87,6 @@ class RingBuffer:
 
 
 class TimeMeasureContainer:
-    
     def __init__(self):
         self.measure_data = bytearray()
 
@@ -182,7 +181,7 @@ class TimeValueRingBuffer:
         ret_list = [None] * items
         for i in range(0, items):
             self.index_get = (self.index_get + 1) % self.capacity
-            ret_list[i] = [self.timestamp_data[self.index_get], self.value_data[self.index_get]]    # append pair
+            ret_list[i] = [self.timestamp_data[self.index_get], self.value_data[self.index_get]]  # append pair
             # timestamp = self.timestamp_data[self.index_get]
             # value = self.value_data[self.index_get]
             # buffer.extend(timestamp.to_bytes(3, "big"))

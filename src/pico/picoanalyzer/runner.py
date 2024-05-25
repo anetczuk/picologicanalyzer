@@ -6,16 +6,12 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-import select
-
+import _thread
 import time
 import utime
 import machine
-import _thread
 
-import board
 from filelogger import FileLogger
-from sysstreamchannel import SysStreamChannel
 from ringbuffer import RingBuffer, TimeValueRingBuffer
 from ringbuffer import TimeMeasureContainer
 from listener import Listener
@@ -56,7 +52,7 @@ class ProbeThread:
                 # board.blink_led(0.1)
                 # utime.sleep(0.1)
 
-                time_value = time.ticks_us()
+                time_value = time.ticks_us()  # pylint: disable=E1101
                 curr_state = self.probe.value()
                 # time_diff = time_value - last_time
                 # time_diff = gc.mem_free()       # takes ~6.5ms
@@ -79,7 +75,6 @@ class ProbeThread:
 
 
 class ProbeContainer(TimeMeasureContainer):
-    
     def __init__(self):
         self.measure_data = bytearray()
 
@@ -149,19 +144,15 @@ class MeasureListener(Listener):
         command = command_data[0]
         buffer_size = command_data[1]
 
-        self.logger.info(f"disabling interupts")
-
-        self.stop_probe()               # start of critical section
-        self.logger.info(f"changing buffer size to {buffer_size}")
+        self.stop_probe()  # start of critical section
         self.measure_queue.set_capacity(buffer_size)
-        self.logger.info(f"enabling interupts")
-        self.start_probe()              # end of critical section
+        self.start_probe()  # end of critical section
 
-        self.logger.info(f"sending ack")
         self.connector.send_ACKNOWLEDGE_RSPNS(command)
         return True
 
-    def _handle_MEASURED_NO_RQST(self, command_data):
+    def _handle_MEASURED_NO_RQST(self, _):
+        # def _handle_MEASURED_NO_RQST(self, command_data):
         measure_size = self.measure_queue.size()
         self.connector.send_MEASURED_NO_RSPNS(measure_size)
         return True
@@ -181,13 +172,12 @@ class MeasureListener(Listener):
     def _callback(self, pin):
         # time_value = time.ticks_us()
         # self.irq_counter += 1
-        self.measure_queue.put(time.ticks_us(), pin.value())
+        self.measure_queue.put(time.ticks_us(), pin.value())  # pylint: disable=E1101
         # self.measure_queue.put(self.irq_counter, pin.value())
 
 
 # running listener on separate core significantly improve performance
 class ListenerThread:
-    
     def __init__(self, listener: MeasureListener):
         self.listener: MeasureListener = listener
         self.thread_id = None
@@ -201,7 +191,7 @@ class ListenerThread:
         self.listener.stop_loop()
 
     def join(self):
-        self.lock.acquire()     # wait for release of lock
+        self.lock.acquire()  # wait for release of lock
 
     def result(self):
         return self.listener.result

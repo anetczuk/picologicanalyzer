@@ -18,6 +18,7 @@ try:
     mpython = True
 except ImportError:
     import traceback
+
     mpython = False
 
 
@@ -28,7 +29,7 @@ class PrintLogger(Logger):
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):  # pylint: disable=W0622
+    def __exit__(self, context_type, value, context_traceback):  # pylint: disable=W0622
         pass
 
     # =========================================

@@ -16,7 +16,8 @@ import board
 from filelogger import FileLogger
 
 
-def start(logger: FileLogger) -> bool:
+def start(_: FileLogger) -> bool:
+    # def start(logger: FileLogger) -> bool:
     while True:
         board.blink_led(0.2)
         utime.sleep(0.2)

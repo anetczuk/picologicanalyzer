@@ -6,13 +6,10 @@
 # LICENSE file in the root directory of this source tree.
 #
 
-import unittest
-import time
+# import unittest
 
 from hostanalyzer.connector import Connector
 from analyzerlib.bytearraychannel import ByteArrayChannel
-from analyzerlib.hostmessage import HostMessage
-from analyzerlib.sensormessage import SensorMessage
 
 
 class ConnectorMock(Connector):

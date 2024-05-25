@@ -65,9 +65,6 @@ def main():
 
             perform_test(connector)
 
-        except KeyboardInterrupt:
-            raise
-
         finally:
             connector.set_keyboard_interrupt(True)
 

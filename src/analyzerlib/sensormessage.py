@@ -15,10 +15,10 @@ class SensorMessage:
     INTERNAL_TEMP_RSPNS = 0x07
     CHANNEL_STATE_RSPNS = 0x08
     MEASURED_NO_RSPNS = 0x09
-    MEASURE_RSPNS = 0x0a
-    MEASURE_TIME_RSPNS = 0x0b
-    TEST_BYTES_RSPNS = 0x0c
-    TEST_TEXT_RSPNS = 0x0d
+    MEASURE_RSPNS = 0x0A
+    MEASURE_TIME_RSPNS = 0x0B
+    TEST_BYTES_RSPNS = 0x0C
+    TEST_TEXT_RSPNS = 0x0D
 
     @staticmethod
     def get_id_from_value(value) -> str:
@@ -38,13 +38,13 @@ class SensorMessage:
             return "CHANNEL_STATE_RSPNS"
         if value == 0x09:
             return "MEASURED_NO_RSPNS"
-        if value == 0x0a:
+        if value == 0x0A:
             return "MEASURE_RSPNS"
-        if value == 0x0b:
+        if value == 0x0B:
             return "MEASURE_TIME_RSPNS"
-        if value == 0x0c:
+        if value == 0x0C:
             return "TEST_BYTES_RSPNS"
-        if value == 0x0d:
+        if value == 0x0D:
             return "TEST_TEXT_RSPNS"
 
         # unhandled value

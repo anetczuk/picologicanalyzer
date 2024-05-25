@@ -22,7 +22,6 @@ except ImportError:
     pass
 
 import sys
-import time
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
@@ -53,12 +52,12 @@ def perform_test(connector: HostEndpoint):
     connector.send_MEASURE_RQST(10)
     message = connector.wait_message()
     connector.print_message(message)
-    
+
     connector.send_MEASURE_TR_RQST(10, 2)
     for _ in range(0, 2):
         message = connector.wait_message()
         connector.print_message(message)
-    
+
     connector.send_MEASURE_TIME_RQST(10)
     message = connector.wait_message()
     connector.print_message(message)
@@ -110,9 +109,6 @@ def main():
             connector.set_keyboard_interrupt(False)
 
             perform_test(connector)
-
-        except KeyboardInterrupt:
-            raise
 
         finally:
             connector.set_keyboard_interrupt(True)

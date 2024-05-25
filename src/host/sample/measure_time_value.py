@@ -24,14 +24,13 @@ except ImportError:
 
 import sys
 import time
-import serial
-
 from collections import Counter
+import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensormessage import SensorMessage
 from analyzerlib.hostmessage import HostMessage
-from analyzerlib.message import measuretimemsg, measuremsg
+from analyzerlib.message import measuretimemsg
 from hostanalyzer.serialchannel import SerialChannel
 
 
@@ -57,12 +56,12 @@ def perform_test(connector: HostEndpoint):
         start_time = time.time()
         message = wait_message(connector)
         transfer_time = time.time() - start_time
-    
+
         # connector.print_message(message)
         if message[0] != SensorMessage.MEASURE_TIME_RSPNS:
             print("unknown message: ", message)
             return
-    
+
         message_array = message[1]
         measuretime_list = measuretimemsg.bytearray_to_data(message_array)
 
@@ -85,7 +84,17 @@ def perform_test(connector: HostEndpoint):
             time_diff = curr_measure_item[0] - last_measure_time
             time_counter.update([time_diff])
             freq = 1000000 / time_diff
-            print("measure time:", curr_measure_item[0], "val:", curr_measure_item[1], "diff:", time_diff, "us", freq, "Hz")
+            print(
+                "measure time:",
+                curr_measure_item[0],
+                "val:",
+                curr_measure_item[1],
+                "diff:",
+                time_diff,
+                "us",
+                freq,
+                "Hz",
+            )
             last_measure_time = curr_measure_item[0]
 
             if curr_measure_item[1] == prev_value:
@@ -99,10 +108,19 @@ def perform_test(connector: HostEndpoint):
         iter_duration = curr_iter_time - prev_iter_time
         prev_iter_time = curr_iter_time
 
-        print("measures:", measure_size,
-              "transfer time:", transfer_time * 1000, "ms",
-              "iter time:", iter_duration * 1000, "ms",
-              "iter time per measure:", iter_duration * 1000 / measure_size, "ms")
+        print(
+            "measures:",
+            measure_size,
+            "transfer time:",
+            transfer_time * 1000,
+            "ms",
+            "iter time:",
+            iter_duration * 1000,
+            "ms",
+            "iter time per measure:",
+            iter_duration * 1000 / measure_size,
+            "ms",
+        )
 
     value_change_counter.update([curr_value_count])
 
@@ -159,9 +177,6 @@ def main():
             connector.set_keyboard_interrupt(False)
 
             perform_test(connector)
-
-        except KeyboardInterrupt:
-            raise
 
         finally:
             connector.set_keyboard_interrupt(True)

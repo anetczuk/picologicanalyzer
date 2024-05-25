@@ -54,7 +54,7 @@ class SerialChannel(AbstractChannel):
                 # no data in buffer
                 break
             receive_count -= len(received_data)
-            #ret_data += received_data
+            # ret_data += received_data
             ret_data.extend(received_data)
         return bytes(ret_data)
 
