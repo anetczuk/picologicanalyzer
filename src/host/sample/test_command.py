@@ -25,8 +25,6 @@ import sys
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
-from analyzerlib.sensormessage import SensorMessage
-from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
 
 
@@ -63,34 +61,6 @@ def perform_test(connector: HostEndpoint):
     connector.print_message(message)
 
     print("completed")
-
-
-def wait_message(connector: HostEndpoint):
-    message = None
-    while True:
-        message = handle_message(connector)
-        if message is None:
-            continue
-        if message[0] is None:
-            continue
-        break
-    return message
-
-
-def handle_message(connector: HostEndpoint):
-    message = connector.receive_message()
-    if message is None:
-        print("no message - timeout")
-        return message
-
-    command = message[0]
-    if command == SensorMessage.ACKNOWLEDGE_RSPNS:
-        ack_command = message[1]
-        if ack_command == HostMessage.SET_KBD_INTR_RQST:
-            print("keyboard interrupt acknowledge")
-            return message
-
-    return message
 
 
 def main():

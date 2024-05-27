@@ -22,10 +22,13 @@ except ImportError:
     pass
 
 import sys
+import argparse
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from hostanalyzer.serialchannel import SerialChannel
+
+from sample import plotutils
 
 
 def measure_avg(connector: HostEndpoint, response_size, avg_size):
@@ -48,20 +51,41 @@ def measure_avg(connector: HostEndpoint, response_size, avg_size):
     return time_avg
 
 
-def perform_test(connector: HostEndpoint):
+def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
     print("starting")
 
     avg_size = 100
+
+    plot_data = []
 
     data_size = 0
     while data_size < 1024:
         data_size += 32
         time_avg = measure_avg(connector, data_size, avg_size)
-        print(f"message size: {data_size} time avg: {time_avg} ms time per byte: {time_avg/data_size} ms")
+        byte_time = time_avg / data_size
+        print(f"message size: {data_size} time avg: {time_avg} us time per byte: {byte_time} us")
+        plot_data.append((data_size, byte_time))
+
+    plot_config = {'title': 'Pico send time',
+                   'xlabel': 'message size [B]',
+                   'ylabel': 'byte send duration [us]'} 
+
+    plotutils.image_xyplot(plot_data, plot_config, out_path=plot_output, show=show_plot)
+    if plot_output:
+        print("plot stored to:", plot_output)
+
     print("completed")
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Calculate byte transfer")
+    parser.add_argument("-sp", "--showplot", action="store_true", help="Show plot")
+    parser.add_argument("-opf", "--outplotfile", action="store", default=None, help="Path to file to output plot")
+
+    args = parser.parse_args()
+    show_plot = args.showplot
+    plot_output = args.outplotfile
+
     print("connecting")
 
     # open a serial connection
@@ -76,7 +100,7 @@ def main():
         try:
             connector.set_keyboard_interrupt(False)
 
-            perform_test(connector)
+            perform_test(connector, plot_output, show_plot)
 
         finally:
             connector.set_keyboard_interrupt(True)

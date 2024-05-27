@@ -23,27 +23,32 @@ except ImportError:
 
 import sys
 import time
+import argparse
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensormessage import SensorMessage
-from analyzerlib.hostmessage import HostMessage
 from hostanalyzer.serialchannel import SerialChannel
 
+from sample import plotutils
 
-def perform_test(connector: HostEndpoint):
+
+def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
     print("starting")
 
-    data_transfer_limit = 6300
+    data_transfer_limit = 6000
+
+    plot_data = []
 
     for data_size in range(8, 1024 + 1, 8):
         count = 0
-        transfers = int(data_transfer_limit / data_size)
+        transfers = int(data_transfer_limit / (data_size+1))
         transfers = max(transfers, 1)
+
+        start_time = time.time()
 
         connector.send_test_bytes_rqst(b"\x01", transfers, data_size)
 
-        start_time = time.time()
         for _ in range(0, transfers):
             message = connector.wait_message()
             if message[0] != SensorMessage.TEST_BYTES_RSPNS:
@@ -56,30 +61,33 @@ def perform_test(connector: HostEndpoint):
                 return
             count += len(data)
         transfer_time = time.time() - start_time
+        transfer_rate = count / transfer_time / 1024
         print(
-            f"data_size: {data_size}: transfer: {transfer_time * 1000} ms, iters: {transfers}"
+            f"data_size: {data_size}: transfer: {transfer_time * 1000} ms, transfers: {transfers}"
             f", iter: {transfer_time / transfers * 1000} ms"
-            f", bytes: {count}, {count / transfer_time / 1024} KB/S"
+            f", bytes: {count}, {transfer_rate} KiB/s"
         )
+        plot_data.append((data_size, transfer_rate))
+
+    plot_config = {'title': 'average send and receive time in relation to receive message size',
+                   'xlabel': 'message size [B]',
+                   'ylabel': 'transfer rate [KiB/s]'} 
+    plotutils.image_xyplot(plot_data, plot_config, out_path=plot_output, show=show_plot)
+    if plot_output:
+        print("plot stored to:", plot_output)
 
     print("completed")
 
 
-def handle_message(connector: HostEndpoint):
-    message = connector.receive_message()
-    if message is None:
-        print("invalid message:", message)
-        return
-
-    command = message[0]
-    if command == SensorMessage.ACKNOWLEDGE_RSPNS:
-        ack_command = message[1]
-        if ack_command == HostMessage.SET_KBD_INTR_RQST:
-            print("keyboard interrupt acknowledge")
-            return
-
-
 def main():
+    parser = argparse.ArgumentParser(description="Calculate byte transfer")
+    parser.add_argument("-sp", "--showplot", action="store_true", help="Show plot")
+    parser.add_argument("-opf", "--outplotfile", action="store", default=None, help="Path to file to output plot")
+
+    args = parser.parse_args()
+    show_plot = args.showplot
+    plot_output = args.outplotfile
+
     print("connecting")
 
     # open a serial connection
@@ -94,7 +102,7 @@ def main():
         try:
             connector.set_keyboard_interrupt(False)
 
-            perform_test(connector)
+            perform_test(connector, plot_output, show_plot)
 
         finally:
             connector.set_keyboard_interrupt(True)

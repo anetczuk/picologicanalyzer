@@ -25,19 +25,25 @@ except ImportError:
 import sys
 import time
 from collections import Counter
+from typing import List
+import argparse
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensormessage import SensorMessage
-from analyzerlib.hostmessage import HostMessage
 from analyzerlib.message import measuretimemsg
 from hostanalyzer.serialchannel import SerialChannel
 
+from sample import plotutils
 
-def perform_test(connector: HostEndpoint):
+
+def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
     print("starting")
 
-    iters = 300
+    connector.send_set_measure_buff_size_rqst(3000)
+    connector.wait_message()        # ack
+
+    iters = 10
     measurements = 200
     print("iters num:", iters, "measurements per iter:", measurements)
 
@@ -50,11 +56,24 @@ def perform_test(connector: HostEndpoint):
 
     received_meaurements_num = 0
 
+    plot_data: List[int] = []
+
     prev_iter_time = time.time()
     for _ in range(0, iters):
+        
+        while True:
+            connector.send_measured_no_rqst()
+            message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
+            measures_in_queue = message[1]
+            if measurements < measures_in_queue:
+                print(f"measures in queue: {measures_in_queue}")
+                break
+            print(f"waiting for measures {measurements} in queue: {measures_in_queue}")
+            time.sleep(1)
+
         connector.send_measure_time_rqst(measurements)
         start_time = time.time()
-        message = wait_message(connector)
+        message = connector.wait_message()
         transfer_time = time.time() - start_time
 
         # connector.print_message(message)
@@ -83,18 +102,18 @@ def perform_test(connector: HostEndpoint):
                 continue
             time_diff = curr_measure_item[0] - last_measure_time
             time_counter.update([time_diff])
-            freq = 1000000 / time_diff
-            print(
-                "measure time:",
-                curr_measure_item[0],
-                "val:",
-                curr_measure_item[1],
-                "diff:",
-                time_diff,
-                "us",
-                freq,
-                "Hz",
-            )
+            # freq = 1000000 / time_diff
+            # print(
+            #     "measure time:",
+            #     curr_measure_item[0],
+            #     "val:",
+            #     curr_measure_item[1],
+            #     "diff:",
+            #     time_diff,
+            #     "us",
+            #     freq,
+            #     "Hz",
+            # )
             last_measure_time = curr_measure_item[0]
 
             if curr_measure_item[1] == prev_value:
@@ -103,6 +122,7 @@ def perform_test(connector: HostEndpoint):
                 value_change_counter.update([curr_value_count])
                 prev_value = curr_measure_item[1]
                 curr_value_count = 1
+            plot_data.append(time_diff)
 
         curr_iter_time = time.time()
         iter_duration = curr_iter_time - prev_iter_time
@@ -130,38 +150,28 @@ def perform_test(connector: HostEndpoint):
 
     print(f"received measurements: {received_meaurements_num} state repeated: {sorted(value_change_counter.items())}")
 
+    plot_config = {'title': 'time between subsequent signal state changes',
+                   'xlabel': 'measurement index',
+                   'ylabel': 'measured half period [us]'} 
+
+    # plotutils.image_hist(plot_data, plot_output, show_plot)
+    data_pairs = list(enumerate(plot_data))
+    plotutils.image_points(data_pairs, plot_config, out_path=plot_output, show=show_plot)
+    if plot_output:
+        print("plot stored to:", plot_output)
+
     print("completed")
 
 
-def wait_message(connector: HostEndpoint):
-    message = None
-    while True:
-        message = handle_message(connector)
-        if message is None:
-            continue
-        if message[0] is None:
-            continue
-        break
-    return message
-
-
-def handle_message(connector: HostEndpoint):
-    message = connector.receive_message()
-    if message is None:
-        print("invalid message:", message)
-        return message
-
-    command = message[0]
-    if command == SensorMessage.ACKNOWLEDGE_RSPNS:
-        ack_command = message[1]
-        if ack_command == HostMessage.SET_KBD_INTR_RQST:
-            print("keyboard interrupt acknowledge")
-            return message
-
-    return message
-
-
 def main():
+    parser = argparse.ArgumentParser(description="Calculate byte transfer")
+    parser.add_argument("-sp", "--showplot", action="store_true", help="Show plot")
+    parser.add_argument("-opf", "--outplotfile", action="store", default=None, help="Path to file to output plot")
+
+    args = parser.parse_args()
+    show_plot = args.showplot
+    plot_output = args.outplotfile
+
     print("connecting")
 
     # open a serial connection
@@ -176,7 +186,7 @@ def main():
         try:
             connector.set_keyboard_interrupt(False)
 
-            perform_test(connector)
+            perform_test(connector, plot_output, show_plot)
 
         finally:
             connector.set_keyboard_interrupt(True)

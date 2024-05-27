@@ -41,7 +41,7 @@ def perform_test(connector: HostEndpoint):
         connector.send_test_text_rqst("a" * tsize, transfers)
         start_time = time.time()
         for _ in range(0, transfers):
-            response = connector.receive_message()
+            response = connector.wait_message()
             data = response[1]
             if data is None:
                 continue

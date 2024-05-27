@@ -22,39 +22,54 @@ except ImportError:
     pass
 
 import sys
+import time
+import argparse
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensormessage import SensorMessage
 from hostanalyzer.serialchannel import SerialChannel
 
+from sample import plotutils
 
-def perform_test(connector: HostEndpoint):
+
+def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
+    print("starting")
+
+    connector.send_set_measure_buff_size_rqst(3000)
+    connector.wait_message()        # ack
+
+    time.sleep(2)
+
     timestamps_num = 4
 
-    data_transfer_limit = 10300
+    transfers = 20
+
+    plot_data = []
 
     # for measures_num in (10, 64, 100, 128, 160, 255, 500):
     for measures_num in range(8, 512 + 1, 8):
-        transfers = int(data_transfer_limit / (measures_num * 4))  # each measurement takes 4 bytes
-        transfers = max(transfers, 1)
-        connector.send_measured_no_rqst()
-        message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
-
         expected_measures_num = measures_num * transfers
-        measures_in_queue = message[1]
-        if expected_measures_num > measures_in_queue:
-            print("warning! not enough measures in Pico queue! Returned times might be harmed!")
 
         diff_list = [0] * (timestamps_num - 1)
         for _ in range(0, transfers):
 
+            # wait for expected number of measures in Pico buffer
+            while True:
+                connector.send_measured_no_rqst()
+                message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
+                measures_in_queue = message[1]
+                if measures_num < measures_in_queue:
+                    break
+                print(f"waiting for measures {measures_num} in queue: {measures_in_queue}")
+                time.sleep(1)
+
             connector.send_test_measure_time_rqst(measures_num)
-            connector.receive_message()  # receive measurements itself
+            connector.wait_message()  # receive measurements itself
 
             timestamp_list = []
             for _ in range(0, timestamps_num):
-                message = connector.receive_message()
+                message = connector.wait_message()
                 if message[0] != SensorMessage.CURRENT_TIME_US_RSPNS:
                     print("received invalid message:")
                     connector.print_message(message)
@@ -69,12 +84,31 @@ def perform_test(connector: HostEndpoint):
         single_avg_sum = sum(single_avg_list)
         single_avg_list.append(single_avg_sum)
 
-        print(f"measures_num: {measures_num} iters: {transfers}" f" single avg: {single_avg_list} us")
+        print(f"measures_num: {measures_num} transfers: {transfers} single measure avg: {single_avg_list} us")
+
+        plot_data.append((measures_num, single_avg_list))
+
+    plot_config = {'title': 'duration of sending measures inside Pico',
+                   'xlabel': 'number of measures per message',
+                   'ylabel': 'time per measure [us]',
+                   "legendpos": "upper right",
+                   'labels': ["getting probe values", "converting to bytearray", "sending message", "total time"]} 
+    plotutils.image_xyplot(plot_data, plot_config, out_path=plot_output, show=show_plot)
+    if plot_output:
+        print("plot stored to:", plot_output)
 
     print("completed")
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Calculate byte transfer")
+    parser.add_argument("-sp", "--showplot", action="store_true", help="Show plot")
+    parser.add_argument("-opf", "--outplotfile", action="store", default=None, help="Path to file to output plot")
+
+    args = parser.parse_args()
+    show_plot = args.showplot
+    plot_output = args.outplotfile
+
     print("connecting")
 
     # open a serial connection
@@ -89,7 +123,7 @@ def main():
         try:
             connector.set_keyboard_interrupt(False)
 
-            perform_test(connector)
+            perform_test(connector, plot_output, show_plot)
 
         finally:
             connector.set_keyboard_interrupt(True)
