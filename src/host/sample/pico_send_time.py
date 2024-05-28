@@ -66,9 +66,7 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
         print(f"message size: {data_size} time avg: {time_avg} us time per byte: {byte_time} us")
         plot_data.append((data_size, byte_time))
 
-    plot_config = {'title': 'Pico send time',
-                   'xlabel': 'message size [B]',
-                   'ylabel': 'byte send duration [us]'} 
+    plot_config = {"title": "Pico send time", "xlabel": "message size [B]", "ylabel": "byte send duration [us]"}
 
     plotutils.image_xyplot(plot_data, plot_config, out_path=plot_output, show=show_plot)
     if plot_output:

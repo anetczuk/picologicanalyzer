@@ -41,9 +41,9 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
     print("starting")
 
     connector.send_set_measure_buff_size_rqst(3000)
-    connector.wait_message()        # ack
+    connector.wait_message()  # ack
 
-    iters = 10
+    iters = 30
     measurements = 200
     print("iters num:", iters, "measurements per iter:", measurements)
 
@@ -59,19 +59,20 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
     plot_data: List[int] = []
 
     prev_iter_time = time.time()
+    # connector.send_measure_time_tr_rqst(measurements, iters, 1)
     for _ in range(0, iters):
-        
-        while True:
-            connector.send_measured_no_rqst()
-            message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
-            measures_in_queue = message[1]
-            if measurements < measures_in_queue:
-                print(f"measures in queue: {measures_in_queue}")
-                break
-            print(f"waiting for measures {measurements} in queue: {measures_in_queue}")
-            time.sleep(1)
+
+        # while True:
+        #     connector.send_measured_no_rqst()
+        #     message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
+        #     measures_in_queue = message[1]
+        #     if measurements < measures_in_queue:
+        #         print(f"measures in queue: {measures_in_queue}")
+        #         break
+        #     print(f"waiting for measures {measurements} in queue: {measures_in_queue}")
 
         connector.send_measure_time_rqst(measurements)
+
         start_time = time.time()
         message = connector.wait_message()
         transfer_time = time.time() - start_time
@@ -142,6 +143,11 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
             "ms",
         )
 
+    connector.send_measured_no_rqst()
+    message = connector.wait_message_type(SensorMessage.MEASURED_NO_RSPNS)
+    measures_in_queue = message[1]
+    print(f"measures in queue: {measures_in_queue}")
+
     value_change_counter.update([curr_value_count])
 
     min_delay = min(time_counter.keys())
@@ -150,9 +156,11 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
 
     print(f"received measurements: {received_meaurements_num} state repeated: {sorted(value_change_counter.items())}")
 
-    plot_config = {'title': 'time between subsequent signal state changes',
-                   'xlabel': 'measurement index',
-                   'ylabel': 'measured half period [us]'} 
+    plot_config = {
+        "title": "time between subsequent signal state changes",
+        "xlabel": "measurement index",
+        "ylabel": "measured half period [us]",
+    }
 
     # plotutils.image_hist(plot_data, plot_output, show_plot)
     data_pairs = list(enumerate(plot_data))

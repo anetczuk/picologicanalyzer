@@ -42,7 +42,7 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
 
     for data_size in range(8, 1024 + 1, 8):
         count = 0
-        transfers = int(data_transfer_limit / (data_size+1))
+        transfers = int(data_transfer_limit / (data_size + 1))
         transfers = max(transfers, 1)
 
         start_time = time.time()
@@ -69,9 +69,11 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
         )
         plot_data.append((data_size, transfer_rate))
 
-    plot_config = {'title': 'average send and receive time in relation to receive message size',
-                   'xlabel': 'message size [B]',
-                   'ylabel': 'transfer rate [KiB/s]'} 
+    plot_config = {
+        "title": "average send and receive time in relation to receive message size",
+        "xlabel": "message size [B]",
+        "ylabel": "transfer rate [KiB/s]",
+    }
     plotutils.image_xyplot(plot_data, plot_config, out_path=plot_output, show=show_plot)
     if plot_output:
         print("plot stored to:", plot_output)

@@ -37,7 +37,7 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
     print("starting")
 
     connector.send_set_measure_buff_size_rqst(3000)
-    connector.wait_message()        # ack
+    connector.wait_message()  # ack
 
     time.sleep(2)
 
@@ -88,11 +88,13 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
 
         plot_data.append((measures_num, single_avg_list))
 
-    plot_config = {'title': 'duration of sending measures inside Pico',
-                   'xlabel': 'number of measures per message',
-                   'ylabel': 'time per measure [us]',
-                   "legendpos": "upper right",
-                   'labels': ["getting probe values", "converting to bytearray", "sending message", "total time"]} 
+    plot_config = {
+        "title": "duration of sending measures inside Pico",
+        "xlabel": "number of measures per message",
+        "ylabel": "time per measure [us]",
+        "legendpos": "upper right",
+        "labels": ["getting probe values", "converting to bytearray", "sending message", "total time"],
+    }
     plotutils.image_xyplot(plot_data, plot_config, out_path=plot_output, show=show_plot)
     if plot_output:
         print("plot stored to:", plot_output)

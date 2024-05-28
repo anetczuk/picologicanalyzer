@@ -14,4 +14,5 @@ mkdir -p "$OUT_DIR"
 
 $SCRIPT_DIR/../src/host/sample/generate-charts.sh "$OUT_DIR"
 
-$SCRIPT_DIR/generate_small.sh
+
+# $SCRIPT_DIR/generate_small.sh
