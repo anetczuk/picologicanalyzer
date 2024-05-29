@@ -19,7 +19,7 @@ class MeasureTimeMsgTest(unittest.TestCase):
         self.assertEqual(measures_list, measures2_list)
 
     def test_convert_data(self):
-        measures_list = [(0, 1), (2, 1)]
+        measures_list = [[0, 1], [2, 1]]
         measures_array = measuretimemsg.data_to_bytearray(measures_list)
         measures2_list = measuretimemsg.bytearray_to_data(measures_array)
         self.assertEqual(measures_list, measures2_list)

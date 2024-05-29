@@ -33,6 +33,7 @@ from analyzerlib.hostendpoint import HostEndpoint
 from analyzerlib.sensormessage import SensorMessage
 from analyzerlib.message import measuretimemsg
 from hostanalyzer.serialchannel import SerialChannel
+from hostanalyzer.timecorrect import TimeCorrect
 
 from sample import plotutils
 
@@ -55,6 +56,8 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
     curr_value_count = 0
 
     received_meaurements_num = 0
+
+    time_correct = TimeCorrect()
 
     plot_data: List[int] = []
 
@@ -84,6 +87,8 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
 
         message_array = message[1]
         measuretime_list = measuretimemsg.bytearray_to_data(message_array)
+
+        time_correct.update_measure_time_list(measuretime_list)
 
         measure_size = len(measuretime_list)
         received_meaurements_num += measure_size

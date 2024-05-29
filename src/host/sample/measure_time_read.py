@@ -22,10 +22,6 @@ except ImportError:
     pass
 
 import sys
-import time
-from collections import Counter
-from typing import List
-import argparse
 import serial
 
 from analyzerlib.hostendpoint import HostEndpoint
@@ -34,10 +30,8 @@ from analyzerlib.message import measuretimemsg
 from hostanalyzer.serialchannel import SerialChannel
 from hostanalyzer.timecorrect import TimeCorrect
 
-from sample import plotutils
 
-
-def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
+def perform_test(connector: HostEndpoint):
     print("starting")
 
     measures_num = 1
@@ -97,14 +91,6 @@ def perform_test(connector: HostEndpoint, plot_output=None, show_plot=False):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Calculate byte transfer")
-    parser.add_argument("-sp", "--showplot", action="store_true", help="Show plot")
-    parser.add_argument("-opf", "--outplotfile", action="store", default=None, help="Path to file to output plot")
-
-    args = parser.parse_args()
-    show_plot = args.showplot
-    plot_output = args.outplotfile
-
     print("connecting")
 
     # open a serial connection
@@ -119,7 +105,7 @@ def main():
         try:
             connector.set_keyboard_interrupt(False)
 
-            perform_test(connector, plot_output, show_plot)
+            perform_test(connector)
 
         finally:
             connector.set_keyboard_interrupt(True)

@@ -6,9 +6,10 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+
 class TimeCorrect:
 
-    TIME_MAX = 16777216     # 2^24 is because 3 bytes timestamp is send in message
+    TIME_MAX = 16777216  # 2^24 is because 3 bytes timestamp is send in message
 
     def __init__(self):
         self.last_measure_time = None
