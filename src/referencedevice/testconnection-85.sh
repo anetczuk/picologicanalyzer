@@ -52,6 +52,9 @@ if [[ $* == *--repeat* ]]; then
 fi
 
 
-sudo $COMMAND -B4 -v
 
-echo "Done"
+if sudo $COMMAND -B4 -v; then
+	echo "Done"
+else
+	echo -e "\nUnable to connect (check wiring)"
+fi
