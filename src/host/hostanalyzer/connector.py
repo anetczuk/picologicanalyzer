@@ -20,6 +20,7 @@ from analyzerlib.message import measuremsg, measuretimemsg
 from analyzerlib.channel import AbstractChannel
 from hostanalyzer.printlogger import PrintLogger
 from hostanalyzer.serialchannel import SerialChannel
+from hostanalyzer.timecorrect import TimeCorrect
 
 
 class Connector:
@@ -28,6 +29,8 @@ class Connector:
         self.logger: PrintLogger = PrintLogger()
         self.channel: AbstractChannel = channel
         self.connector = HostEndpoint(self.channel)
+
+        self.time_correct = TimeCorrect()
 
         # self.data_queue: Queue = Queue()
         self.data_connection: Connection = connection
@@ -174,6 +177,8 @@ class Connector:
             if message[0] == SensorMessage.MEASURE_TIME_RSPNS:
                 measure_array = message[1]
                 measuretime_list = measuretimemsg.bytearray_to_data(measure_array)
+
+                self.time_correct.update_measure_time_list(measuretime_list)
 
                 self._send_data(measuretime_list)
 

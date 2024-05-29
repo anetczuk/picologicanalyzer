@@ -53,5 +53,5 @@ def bytearray_to_data(measures_data):
         time_array = measures_data[time_offset : time_offset + 3]
         measure_time = int.from_bytes(time_array, "big")
         value = measures_data[time_offset + 3]
-        ret_list[i] = (measure_time, value)
+        ret_list[i] = [measure_time, value]
     return ret_list
