@@ -6,6 +6,7 @@
 # LICENSE file in the root directory of this source tree.
 #
 
+import time
 import abc
 import signal
 from queue import Queue
@@ -59,11 +60,15 @@ class AnimatedPlot:
         self.ani = FuncAnimation(self.fig, self._draw, interval=interval)
         # self.ani = animation.FuncAnimation(self.fig, self._draw, fargs=(self.xs, self.ys), interval=200)
 
+        self.data_last_time = None
+
     # This function is called periodically from FuncAnimation
     def _draw(self, i):  # pylint: disable=W0613
         try:
-            # Draw x and y lists
-            self.ax.clear()
+            if self.data_stream.empty():
+                self._update_last()
+                self._redraw_plot()
+                return
 
             # Add x and y to lists
             # 'self.data_stream' contains state changes, so to draw square signal plot
@@ -71,6 +76,7 @@ class AnimatedPlot:
             prev_val = 0
             if self.ys:
                 prev_val = self.ys[-1]
+            added_item = False
             while not self.data_stream.empty():
                 # data_time = dt.datetime.now().strftime('%H:%M:%S.%f')
                 queue_list = self.data_stream.get()
@@ -82,23 +88,54 @@ class AnimatedPlot:
                     prev_val = data_value
                     self.xs.append(data_time / 1000000)
                     self.ys.append(data_value)
+                    added_item = True
+
+            if not added_item:
+                self._update_last()
+                self._redraw_plot()
+                return
+
+            self.data_last_time = time.time()
 
             # cut plot array
             self.xs = self.xs[-self.plot_items_number :]
             self.ys = self.ys[-self.plot_items_number :]
 
-            self.ax.plot(self.xs, self.ys)
+            self._redraw_plot()
 
-            # Format plot
-            # plt.xticks(rotation=45, ha='right')
-            # plt.xticks(ticks=[], rotation=45, ha='right')
-            plt.subplots_adjust(bottom=0.30)
-            # plt.title('TMP102 Temperature over Time')
-            # plt.ylabel('Temperature (deg C)')
         except BaseException as exc:
             # sys.exit(1)
             print("got exception:", exc)
             print(traceback.format_exc())
+
+    def _update_last(self):
+        # repeat last value
+        if not self.data_last_time:
+            return
+
+        if len(self.xs) > 1:
+            if self.ys[-2] != self.ys[-1]:
+                # repeat last value
+                self.xs.append(self.xs[-1])
+                self.ys.append(self.ys[-1])
+
+        curr_time = time.time()
+        diff_time = curr_time - self.data_last_time  # in s
+        self.data_last_time = curr_time
+        self.xs[-1] += diff_time
+
+    def _redraw_plot(self):
+        # Draw x and y lists
+        self.ax.clear()
+
+        self.ax.plot(self.xs, self.ys)
+
+        # Format plot
+        # plt.xticks(rotation=45, ha='right')
+        # plt.xticks(ticks=[], rotation=45, ha='right')
+        plt.subplots_adjust(bottom=0.30)
+        # plt.title('TMP102 Temperature over Time')
+        # plt.ylabel('Temperature (deg C)')
 
     def show(self):
         plt.show()
