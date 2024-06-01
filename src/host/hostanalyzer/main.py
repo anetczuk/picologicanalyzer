@@ -15,7 +15,7 @@ from threading import Thread
 # import signal
 import serial
 
-from hostanalyzer.plot import AnimatedPlot, DataStream
+from hostanalyzer.plot import AnimatedTimePlot, DataStream
 from hostanalyzer.connector import SerialConnector
 
 
@@ -98,7 +98,7 @@ def main():
     # plot have to be in main thread
     data_stream = ConnectionStream(child_conn)
 
-    aplot = AnimatedPlot(data_stream, plot_items_number=600, interval=150)
+    aplot = AnimatedTimePlot(data_stream, plot_time_span=1, interval=150)
 
     # watch for device termination
     close_callback = aplot.close

@@ -39,11 +39,15 @@ class QueueStream(DataStream):
 
 
 class AnimatedPlot:
-    def __init__(self, data_stream: DataStream, plot_items_number=10, interval=200):
+    def __init__(self, data_stream: DataStream, plot_items_number=None, plot_x_span=None, interval=200):
         signal.signal(signal.SIGINT, self.handle_interrupt)
 
         self.data_stream: DataStream = data_stream
         self.plot_items_number = plot_items_number
+        self.plot_x_span = plot_x_span
+
+        if self.plot_items_number is None and self.plot_x_span is None:
+            self.plot_items_number = 10
 
         # Enable interactive mode for non-blocking plotting
         # plt.ion()
@@ -60,69 +64,69 @@ class AnimatedPlot:
         self.ani = FuncAnimation(self.fig, self._draw, interval=interval)
         # self.ani = animation.FuncAnimation(self.fig, self._draw, fargs=(self.xs, self.ys), interval=200)
 
-        self.data_last_time = None
-
     # This function is called periodically from FuncAnimation
     def _draw(self, i):  # pylint: disable=W0613
         try:
             if self.data_stream.empty():
-                self._update_last()
-                self._redraw_plot()
+                self._redraw_unchanged()
                 return
 
-            # Add x and y to lists
-            # 'self.data_stream' contains state changes, so to draw square signal plot
-            # additional points (with previous value) have to be added
-            prev_val = 0
-            if self.ys:
-                prev_val = self.ys[-1]
-            added_item = False
-            while not self.data_stream.empty():
-                # data_time = dt.datetime.now().strftime('%H:%M:%S.%f')
-                queue_list = self.data_stream.get()
-                for queue_data in queue_list:
-                    data_time = queue_data[0]
-                    data_value = queue_data[1]
-                    self.xs.append((data_time - 1) / 1000000)
-                    self.ys.append(prev_val)
-                    prev_val = data_value
-                    self.xs.append(data_time / 1000000)
-                    self.ys.append(data_value)
-                    added_item = True
+            added_item = self._add_data()
 
             if not added_item:
-                self._update_last()
-                self._redraw_plot()
+                self._redraw_unchanged()
                 return
 
-            self.data_last_time = time.time()
+            x_len = len(self.xs)
+            if x_len < 1:
+                return
 
             # cut plot array
-            self.xs = self.xs[-self.plot_items_number :]
-            self.ys = self.ys[-self.plot_items_number :]
+            if self.plot_items_number is not None:
+                self.xs = self.xs[-self.plot_items_number :]
+                self.ys = self.ys[-self.plot_items_number :]
+
+            elif self.plot_x_span is not None:
+                recent_x = self.xs[-1]
+                for i in range(0, x_len - 1):
+                    index = x_len - i - 1
+                    curr_x = self.xs[index]
+                    diff_x = recent_x - curr_x
+                    if diff_x > self.plot_x_span:
+                        self.xs = self.xs[index :]
+                        self.ys = self.ys[index :]
 
             self._redraw_plot()
 
         except BaseException as exc:
             # sys.exit(1)
             print("got exception:", exc)
-            print(traceback.format_exc())
 
-    def _update_last(self):
-        # repeat last value
-        if not self.data_last_time:
-            return
+    def _add_data(self) -> bool:
+        # Add x and y to lists
+        # 'self.data_stream' contains state changes, so to draw square signal plot
+        # additional points (with previous value) have to be added
+        prev_val = 0
+        if self.ys:
+            prev_val = self.ys[-1]
+        added_item = False
+        while not self.data_stream.empty():
+            # data_time = dt.datetime.now().strftime('%H:%M:%S.%f')
+            queue_list = self.data_stream.get()
+            for queue_data in queue_list:
+                data_time = queue_data[0]
+                data_value = queue_data[1]
+                if prev_val != data_value:
+                    self.xs.append(data_time)
+                    self.ys.append(prev_val)
+                prev_val = data_value
+                self.xs.append(data_time)
+                self.ys.append(data_value)
+                added_item = True
+        return added_item
 
-        if len(self.xs) > 1:
-            if self.ys[-2] != self.ys[-1]:
-                # repeat last value
-                self.xs.append(self.xs[-1])
-                self.ys.append(self.ys[-1])
-
-        curr_time = time.time()
-        diff_time = curr_time - self.data_last_time  # in s
-        self.data_last_time = curr_time
-        self.xs[-1] += diff_time
+    def _redraw_unchanged(self):
+        pass
 
     def _redraw_plot(self):
         # Draw x and y lists
@@ -154,3 +158,52 @@ class AnimatedPlot:
 
     def handle_interrupt(self, signum, frame):  # pylint: disable=W0613
         self.close()
+
+
+class AnimatedTimePlot(AnimatedPlot):
+    def __init__(self, data_stream: DataStream, plot_items_number=None, plot_time_span=None, interval=200):
+        self.data_last_time = None
+        super().__init__(data_stream, plot_items_number, plot_time_span, interval)
+
+    def _add_data(self) -> bool:
+        # Add x and y to lists
+        # 'self.data_stream' contains state changes, so to draw square signal plot
+        # additional points (with previous value) have to be added
+        prev_val = 0
+        if self.ys:
+            prev_val = self.ys[-1]
+        added_item = False
+        while not self.data_stream.empty():
+            # data_time = dt.datetime.now().strftime('%H:%M:%S.%f')
+            queue_list = self.data_stream.get()
+            for queue_data in queue_list:
+                data_time = queue_data[0]
+                data_value = queue_data[1]
+                if prev_val != data_value:
+                    self.xs.append(data_time / 1000000)
+                    self.ys.append(prev_val)
+                prev_val = data_value
+                self.xs.append(data_time / 1000000)
+                self.ys.append(data_value)
+                added_item = True
+        return added_item
+
+    def _redraw_unchanged(self):
+        self._update_last()
+        self._redraw_plot()
+
+    def _update_last(self):
+        # repeat last value
+        if not self.data_last_time:
+            return
+
+        if len(self.xs) > 1:
+            if self.ys[-2] != self.ys[-1]:
+                # repeat last value
+                self.xs.append(self.xs[-1])
+                self.ys.append(self.ys[-1])
+
+        curr_time = time.time()
+        diff_time = curr_time - self.data_last_time  # in s
+        self.data_last_time = curr_time
+        self.xs[-1] += diff_time
