@@ -26,13 +26,13 @@ Features:
 
 Following measurements and conclusions were taken:
 - USB PC input buffer limit: ~6200B (might depend on OS)
-- Pico to Host max transfer rate: 350KiB/s
+- Pico to Host max transfer rate (using this implementation): 350KiB/s
 - best Pico-to-Host transfer performance is achieved with message size greater than 200B
 - sending single measurement takes ~150us (4 bytes: timestamp and value)
 - stream mode measurement is reliable up to 6000Hz
 - interrupt mode is more stable than polling pins for value
 - garbage collector can trigger in any time
-- hardware interrupt disables and interrupts garbage collector
+- hardware interrupts interrupt and temporarily disable garbage collector
 
 
 ## <a name="hostanalyzer"></a> Analyzer on Host
